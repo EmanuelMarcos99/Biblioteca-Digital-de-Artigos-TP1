@@ -1,0 +1,72 @@
+/* --- CSS Reset --- */
+/* Remove estilos padrão do navegador para garantir consistência visual */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Variáveis de Cor e Estilo --- */
+/* Centralizar as cores e estilos aqui facilita a manutenção e customização futura */
+:root {
+  --color-primary: #0056b3; /* Azul principal para links e botões */
+  --color-background: #f8f9fa; /* Fundo cinza bem claro, para um look suave */
+  --color-surface: #ffffff; /* Fundo para cards e containers, o branco padrão */
+  --color-text: #212529; /* Cor principal do texto, quase preto */
+  --color-text-secondary: #6c757d; /* Cor para textos secundários e legendas */
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --border-radius: 8px;
+}
+
+/* --- Estilos Globais da Aplicação --- */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Garante que o container principal do React ocupe a altura toda da tela */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* --- Classes Utilitárias --- */
+/* Uma classe simples para centralizar o conteúdo principal das páginas */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
