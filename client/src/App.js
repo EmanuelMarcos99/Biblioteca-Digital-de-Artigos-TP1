@@ -1,78 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
+// Importe os componentes do react-router
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-// Importando os componentes que foram separados
+// Importando componentes de layout
 import Header from './components/Header';
-import SearchBar from './components/SearchBar';
-import DocumentCard from './components/DocumentCard';
 import Footer from './components/Footer';
 
-// Dados de exemplo que viriam do seu backend (API)
-const mockDocuments = [
-  {
-    id: 1,
-    title: 'Uma Abordagem Baseada em Aprendizado Profundo para Detecção de Anomalias em Redes',
-    authors: 'João Silva, Maria Oliveira',
-    publication: 'Anais do Simpósio Brasileiro de Redes de Computadores e Sistemas Distribuídos (SBRC)',
-    year: 2023,
-    url: '#'
-  },
-  {
-    id: 2,
-    title: 'Análise de Desempenho de Algoritmos de Banco de Dados em Grafos',
-    authors: 'Carlos Pereira, Ana Souza',
-    publication: 'Anais do Simpósio Brasileiro de Banco de Dados (SBBD)',
-    year: 2022,
-    url: '#'
-  },
-  {
-    id: 3,
-    title: 'Segurança em Sistemas de Votação Eletrônica: Desafios e Propostas',
-    authors: 'Beatriz Costa, Emanuel Figueiredo',
-    publication: 'Anais do Simpósio Brasileiro de Segurança da Informação e de Sistemas Computacionais (SBSeg)',
-    year: 2023,
-    url: '#'
-  },
-  {
-    id: 4,
-    title: 'Otimização de Compiladores para Arquiteturas de Múltiplos Núcleos',
-    authors: 'Ezequiel Moreira, Ricardo Lima',
-    publication: 'Anais do Simpósio em Sistemas Computacionais de Alto Desempenho (WSCAD)',
-    year: 2021,
-    url: '#'
-  }
-];
+// Importando as novas páginas
+import HomePage from './pages/HomePage';
+import AdminPage from './pages/AdminPage';
 
-
-// Componente principal que une tudo
+// O App agora apenas gerencia as rotas
 function App() {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const filteredDocuments = mockDocuments.filter(doc =>
-    doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.authors.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="app-wrapper">
-      <Header />
-      <main className="container">
-        <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
-        
-        <section className="results-section">
-          <h2>Publicações Recentes</h2>
-          <div className="document-list">
-            {filteredDocuments.map(doc => (
-              <DocumentCard key={doc.id} doc={doc} />
-            ))}
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+    <Router>
+      <div className="app-wrapper">
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
