@@ -53,7 +53,6 @@ function HomePage() {
   return (
     <main className="container">
       <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
-
       <section className="results-section">
         <h2>Publicações Recentes</h2>
         <div className="document-list">

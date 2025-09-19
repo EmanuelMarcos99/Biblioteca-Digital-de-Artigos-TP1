@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './AdminPage.css'; // Importando o CSS para estilização
+import './style/AdminPage.css'; // Importando o CSS para estilização
 
 function AdminPage() {
   // ATENÇÃO: Estes dados são mocados. O próximo passo é buscar de uma API (GET /api/eventos).

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; // Importe o Link para navegação
-import './Header.css'; // Importa o CSS específico para o header
+import './style/Header.css'; // Importa o CSS específico para o header
 
 function Header() {
   return (
