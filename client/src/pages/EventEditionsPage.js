@@ -62,7 +62,12 @@ function EventEditionsPage() {
   };
 
   if (!currentEvent) {
-    return <p>Evento não encontrado!</p>;
+    return (
+        <main className="container">
+            <p>Evento não encontrado!</p>
+            <Link to="/admin">Voltar para a lista de eventos.</Link>
+        </main>
+    );
   }
 
   return (
@@ -76,11 +81,11 @@ function EventEditionsPage() {
           <form onSubmit={handleSubmit} className="event-form">
             <div className="form-group">
               <label htmlFor="year">Ano</label>
-              <input type="number" id="year" name="year" value={formData.year} onChange={handleInputChange} required />
+              <input type="number" id="year" name="year" placeholder="Ex: 2024" value={formData.year} onChange={handleInputChange} required />
             </div>
             <div className="form-group">
               <label htmlFor="location">Local</label>
-              <input type="text" id="location" name="location" value={formData.location} onChange={handleInputChange} required />
+              <input type="text" id="location" name="location" placeholder="Ex: São Paulo - SP" value={formData.location} onChange={handleInputChange} required />
             </div>
              <div className="form-group">
               <label htmlFor="startDate">Data de Início</label>
@@ -99,17 +104,21 @@ function EventEditionsPage() {
 
         <div className="admin-section">
           <h2>Edições Cadastradas</h2>
-          <ul className="event-list">
-            {editions.map(edition => (
-              <li key={edition.id} className="event-item">
-                <span>{edition.year} - {edition.location}</span>
-                <div className="event-actions">
-                  <button onClick={() => handleEdit(edition)} className="btn-secondary">Editar</button>
-                  <button onClick={() => handleDelete(edition.id)} className="btn-danger">Excluir</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {editions.length === 0 ? (
+            <p>Nenhuma edição cadastrada para este evento ainda.</p>
+          ) : (
+            <ul className="event-list">
+              {editions.map(edition => (
+                <li key={edition.id} className="event-item">
+                  <span>{edition.year} - {edition.location}</span>
+                  <div className="event-actions">
+                    <button onClick={() => handleEdit(edition)} className="btn-secondary">Editar</button>
+                    <button onClick={() => handleDelete(edition.id)} className="btn-danger">Excluir</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </main>
@@ -117,3 +126,4 @@ function EventEditionsPage() {
 }
 
 export default EventEditionsPage;
+
