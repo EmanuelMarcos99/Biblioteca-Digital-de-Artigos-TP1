@@ -1,0 +1,54 @@
+.public-page {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.public-page h1 {
+  font-size: 2.2rem;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #0056b3;
+  padding-bottom: 10px;
+}
+
+.event-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.public-page h2 {
+  font-size: 1.8rem;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.editions-list {
+  list-style: none;
+  padding: 0;
+}
+
+.editions-list li {
+  margin-bottom: 10px;
+}
+
+.editions-list li a {
+  display: block;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #0056b3;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.editions-list li a:hover {
+  background-color: #e9ecef;
+  color: #003d82;
+}
+

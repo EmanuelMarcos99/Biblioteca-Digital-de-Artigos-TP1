@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SearchBar from '../components/SearchBar';
 import DocumentCard from '../components/DocumentCard';
 
-// Os dados de exemplo foram movidos para cá por enquanto
+// Dados de exemplo atualizados com 'eventSlug'
 const mockDocuments = [
   {
     id: 1,
@@ -10,6 +10,7 @@ const mockDocuments = [
     authors: 'João Silva, Maria Oliveira',
     publication: 'Anais do Simpósio Brasileiro de Redes de Computadores e Sistemas Distribuídos (SBRC)',
     year: 2023,
+    eventSlug: 'sbrc', // Novo campo
     url: '#'
   },
   {
@@ -18,6 +19,7 @@ const mockDocuments = [
     authors: 'Carlos Pereira, Ana Souza',
     publication: 'Anais do Simpósio Brasileiro de Banco de Dados (SBBD)',
     year: 2022,
+    eventSlug: 'sbbd', // Novo campo
     url: '#'
   },
   {
@@ -26,17 +28,20 @@ const mockDocuments = [
     authors: 'Beatriz Costa, Emanuel Figueiredo',
     publication: 'Anais do Simpósio Brasileiro de Segurança da Informação e de Sistemas Computacionais (SBSeg)',
     year: 2023,
+    eventSlug: 'sbseg', // Novo campo (sem dados de exemplo para a página, mas o slug existe)
     url: '#'
   },
-  {
+   {
     id: 4,
     title: 'Otimização de Compiladores para Arquiteturas de Múltiplos Núcleos',
     authors: 'Ezequiel Moreira, Ricardo Lima',
     publication: 'Anais do Simpósio em Sistemas Computacionais de Alto Desempenho (WSCAD)',
     year: 2021,
+    eventSlug: 'wscad', // Novo campo
     url: '#'
   }
 ];
+
 
 function HomePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,18 +56,22 @@ function HomePage() {
   );
 
   return (
-    <main className="container">
-      <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
-      <section className="results-section">
-        <h2>Publicações Recentes</h2>
-        <div className="document-list">
-          {filteredDocuments.map(doc => (
-            <DocumentCard key={doc.id} doc={doc} />
-          ))}
-        </div>
-      </section>
-    </main>
+    <>
+      <main className="container">
+        <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+        
+        <section className="results-section">
+          <h2>Publicações Recentes</h2>
+          <div className="document-list">
+            {filteredDocuments.map(doc => (
+              <DocumentCard key={doc.id} doc={doc} />
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
 
 export default HomePage;
+

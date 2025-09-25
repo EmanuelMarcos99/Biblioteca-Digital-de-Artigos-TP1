@@ -1,17 +1,25 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // Importar o Link
+import './style/DocumentCard.css';
 
-// Componente para um card de documento individual
 function DocumentCard({ doc }) {
   return (
-    <div className="document-card">
-      <h3><a href={doc.url}>{doc.title}</a></h3>
-      <p className="authors">{doc.authors}</p>
-      <p className="publication">{doc.publication}, {doc.year}</p>
-      <a href={doc.url} className="btn-pdf" target="_blank" rel="noopener noreferrer">
-        Ver PDF
+    <div className="doc-card">
+      <h3 className="doc-title">{doc.title}</h3>
+      <p className="doc-authors">{doc.authors}</p>
+      
+      {/* O nome da publicação agora é um link */}
+      <p className="doc-publication">
+        Publicado em: 
+        <Link to={`/eventos/${doc.eventSlug}`}> {doc.publication}, {doc.year}</Link>
+      </p>
+
+      <a href={doc.url} className="doc-link" target="_blank" rel="noopener noreferrer">
+        Aceder ao Artigo
       </a>
     </div>
   );
 }
 
 export default DocumentCard;
+
