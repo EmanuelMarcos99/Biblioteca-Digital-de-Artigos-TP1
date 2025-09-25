@@ -1,20 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // Importe o Link para navegação
-import './style/Header.css'; // Importa o CSS específico para o header
+import { Link, NavLink } from 'react-router-dom';
+import './style/Header.css'; // Usando a nova estrutura de CSS
 
 function Header() {
   return (
-    <header className="app-header">
-      <div className="container header-content">
-        {/* O logo/título agora é um link para a página inicial */}
-        <Link to="/" className="logo-link">
-            <h1>Biblioteca Digital SBC</h1>
+    <header className="main-header">
+      <div className="container">
+        <Link to="/" className="logo">
+          <h1>Biblioteca Digital SBC</h1>
         </Link>
-        
-        {/* Menu de navegação */}
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/admin">Admin</Link>
+        <nav className="main-nav">
+          <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/admin/eventos">Gerir Eventos</NavLink>
+          <NavLink to="/admin/artigos">Gerir Artigos</NavLink>
+          {/* Novo link para a importação */}
+          <NavLink to="/admin/importar">Importar BibTeX</NavLink>
         </nav>
       </div>
     </header>

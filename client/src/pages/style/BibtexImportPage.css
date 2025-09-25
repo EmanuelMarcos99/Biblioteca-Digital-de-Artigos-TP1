@@ -1,0 +1,57 @@
+.import-page {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.import-page h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.import-page p {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.upload-form .form-group {
+  margin-bottom: 25px;
+}
+
+.upload-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.upload-form input[type="file"] {
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.feedback-message {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.feedback-message.success {
+  background-color: #e6f7e9;
+  color: #2f6f43;
+  border: 1px solid #b7e4c7;
+}
+
+.feedback-message.error {
+  background-color: #fde2e2;
+  color: #8c1c1c;
+  border: 1px solid #f7c5c5;
+}
