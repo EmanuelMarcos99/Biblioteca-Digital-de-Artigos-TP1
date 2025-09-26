@@ -1,0 +1,32 @@
+/* Herda os estilos de .public-page */
+.author-page .year-section {
+  margin-top: 40px;
+}
+
+.author-page h2 {
+  font-size: 1.8rem;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.author-page .articles-list {
+  list-style: none;
+  padding: 0;
+}
+
+.author-page .articles-list li {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.author-page .articles-list li:last-child {
+  border-bottom: none;
+}
+
+.author-page .article-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
