@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SearchBar from '../components/SearchBar';
 import DocumentCard from '../components/DocumentCard';
 
-// Dados de exemplo atualizados com 'eventSlug'
+// Dados de exemplo que já temos
 const mockDocuments = [
   {
     id: 1,
@@ -10,7 +10,7 @@ const mockDocuments = [
     authors: 'João Silva, Maria Oliveira',
     publication: 'Anais do Simpósio Brasileiro de Redes de Computadores e Sistemas Distribuídos (SBRC)',
     year: 2023,
-    eventSlug: 'sbrc', // Novo campo
+    eventSlug: 'sbrc',
     url: '#'
   },
   {
@@ -19,7 +19,7 @@ const mockDocuments = [
     authors: 'Carlos Pereira, Ana Souza',
     publication: 'Anais do Simpósio Brasileiro de Banco de Dados (SBBD)',
     year: 2022,
-    eventSlug: 'sbbd', // Novo campo
+    eventSlug: 'sbbd',
     url: '#'
   },
   {
@@ -28,7 +28,7 @@ const mockDocuments = [
     authors: 'Beatriz Costa, Emanuel Figueiredo',
     publication: 'Anais do Simpósio Brasileiro de Segurança da Informação e de Sistemas Computacionais (SBSeg)',
     year: 2023,
-    eventSlug: 'sbseg', // Novo campo (sem dados de exemplo para a página, mas o slug existe)
+    eventSlug: 'sbseg',
     url: '#'
   },
    {
@@ -37,7 +37,7 @@ const mockDocuments = [
     authors: 'Ezequiel Moreira, Ricardo Lima',
     publication: 'Anais do Simpósio em Sistemas Computacionais de Alto Desempenho (WSCAD)',
     year: 2021,
-    eventSlug: 'wscad', // Novo campo
+    eventSlug: 'wscad',
     url: '#'
   }
 ];
@@ -52,19 +52,28 @@ function HomePage() {
 
   const filteredDocuments = mockDocuments.filter(doc =>
     doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.authors.toLowerCase().includes(searchTerm.toLowerCase())
+    doc.authors.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.publication.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <>
       <main className="container">
-        <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+        <SearchBar 
+          searchTerm={searchTerm} 
+          onSearchChange={handleSearchChange}
+          allDocuments={mockDocuments} // Passa todos os documentos para o autocomplete
+        />
         
         <section className="results-section">
           <h2>Publicações Recentes</h2>
           <div className="document-list">
             {filteredDocuments.map(doc => (
-              <DocumentCard key={doc.id} doc={doc} />
+              <DocumentCard 
+                key={doc.id} 
+                doc={doc} 
+                searchTerm={searchTerm}
+              />
             ))}
           </div>
         </section>

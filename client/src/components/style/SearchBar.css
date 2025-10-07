@@ -1,0 +1,59 @@
+/* Container para posicionar a lista de sugestões em relação à barra de busca */
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 40px auto;
+}
+
+.search-bar-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  padding: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.search-input {
+  width: 100%;
+  padding: 15px 25px;
+  border: none;
+  outline: none;
+  font-size: 1.1rem;
+  background-color: transparent;
+}
+
+/* A lista de sugestões de autocomplete */
+.suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.suggestions-list li {
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestions-list li:last-child {
+  border-bottom: none;
+}
+
+.suggestions-list li:hover {
+  background-color: #f8f9fa;
+}
