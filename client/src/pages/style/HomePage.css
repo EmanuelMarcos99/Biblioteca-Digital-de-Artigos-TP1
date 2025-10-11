@@ -1,8 +1,25 @@
-.results-section{
-    margin-bottom: 100px;
+/* --- ESTILOS PARA A GRELHA RESPONSIVA DE ARTIGOS --- */
+
+.results-section .document-list {
+  display: grid;
+  /* Por defeito (telemóveis), usa uma coluna */
+  grid-template-columns: 1fr; 
+  gap: 25px; /* Espaçamento entre os cartões */
 }
 
-.document-list{
-    display: flex;
-    padding-bottom: 30px;
+/* Ecrãs de tablet e maiores (a partir de 768px) */
+@media (min-width: 768px) {
+  .results-section .document-list {
+    /* Mostra duas colunas */
+    grid-template-columns: repeat(2, 1fr); 
+  }
 }
+
+/* Ecrãs de computador e maiores (a partir de 1024px) */
+@media (min-width: 1024px) {
+  .results-section .document-list {
+    /* Mostra três colunas */
+    grid-template-columns: repeat(3, 1fr); 
+  }
+}
+
