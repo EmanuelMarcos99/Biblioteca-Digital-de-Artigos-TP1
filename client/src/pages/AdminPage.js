@@ -1,107 +1,130 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Importar o Link
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../services/api'; // Importar o nosso serviço de API
 import './style/AdminPage.css';
 
 function AdminPage() {
-  // A lógica existente de estado e manipulação de formulário permanece a mesma
-  const [events, setEvents] = useState([
-    { id: 1, name: 'Simpósio Brasileiro de Redes de Computadores', slug: 'sbrc', description: 'O SBRC é o mais importante evento científico sobre redes de computadores e sistemas distribuídos do Brasil.' },
-    { id: 2, name: 'Simpósio Brasileiro de Banco de Dados', slug: 'sbbd', description: 'O SBBD é o evento oficial de banco de dados da Sociedade Brasileira de Computação (SBC).' },
-  ]);
-
+  const [events, setEvents] = useState([]);
   const [formData, setFormData] = useState({ name: '', description: '', slug: '' });
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleInputChange = (e) => {
+  // Função para buscar os eventos da API
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      // A rota no backend é /api/eventos
+      const response = await api.get('/eventos');
+      setEvents(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Falha ao carregar os eventos. Verifique se o servidor backend está a correr.');
+      console.error("Erro ao buscar eventos:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Buscar os dados iniciais quando o componente é montado
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const handleEdit = (event) => {
-    setEditingId(event.id);
-    setFormData({ name: event.name, description: event.description, slug: event.slug });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setFormData({ name: '', description: '', slug: '' });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.slug) {
-      alert('Nome e Slug são obrigatórios!');
+      alert('Nome e Slug são obrigatórios.');
       return;
     }
 
-    if (editingId) {
-      // ATENÇÃO: Lógica de ATUALIZAÇÃO (PUT /api/eventos/:id)
-      setEvents(events.map(event =>
-        event.id === editingId ? { ...event, ...formData } : event
-      ));
-    } else {
-      // ATENÇÃO: Lógica de CRIAÇÃO (POST /api/eventos)
-      const newId = events.length > 0 ? Math.max(...events.map(ev => ev.id)) + 1 : 1;
-      setEvents([...events, { id: newId, ...formData }]);
+    try {
+      if (editingId) {
+        // --- ATENÇÃO: Lógica de Atualização (PUT) ---
+        const response = await api.put(`/eventos/${editingId}`, formData);
+        setEvents(events.map(event => (event.id === editingId ? response.data : event)));
+      } else {
+        // --- ATENÇÃO: Lógica de Criação (POST) ---
+        const response = await api.post('/eventos', formData);
+        setEvents([...events, response.data]);
+      }
+      resetForm();
+    } catch (err) {
+      setError('Ocorreu um erro ao guardar o evento.');
+      console.error("Erro ao guardar evento:", err);
     }
-
-    handleCancelEdit();
+  };
+  
+  const handleEdit = (event) => {
+    setEditingId(event.id);
+    setFormData({ name: event.name, description: event.description || '', slug: event.slug });
   };
 
-  const handleDelete = (eventId) => {
-    if (window.confirm('Tem certeza que deseja excluir este evento?')) {
-      // ATENÇÃO: Lógica de EXCLUSÃO (DELETE /api/eventos/:id)
-      setEvents(events.filter(event => event.id !== eventId));
+  const handleDelete = async (id) => {
+    if (window.confirm('Tem a certeza que deseja excluir este evento?')) {
+      try {
+        // --- ATENÇÃO: Lógica de Exclusão (DELETE) ---
+        await api.delete(`/eventos/${id}`);
+        setEvents(events.filter(event => event.id !== id));
+      } catch (err) {
+        setError('Ocorreu um erro ao excluir o evento.');
+        console.error("Erro ao excluir evento:", err);
+      }
     }
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData({ name: '', description: '', slug: '' });
   };
 
   return (
     <main className="container">
       <div className="admin-page">
-        <h1>Painel do Administrador</h1>
-        <p>Aqui você pode gerir os eventos da biblioteca digital.</p>
+        <h1>Gestão de Eventos</h1>
 
-        {/* Formulário de Cadastro e Edição */}
-        <div className="admin-section">
-           <h2>{editingId ? 'Editar Evento' : 'Cadastrar Novo Evento'}</h2>
-          <form onSubmit={handleSubmit} className="event-form">
-            <div className="form-group">
-              <label htmlFor="name">Nome do Evento</label>
-              <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required />
-            </div>
-            <div className="form-group">
-              <label htmlFor="description">Descrição</label>
-              <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="slug">Slug (URL amigável, ex: sbrc)</label>
-              <input type="text" id="slug" name="slug" value={formData.slug} onChange={handleInputChange} required />
-            </div>
-            <div className="form-actions">
-              <button type="submit" className="btn-primary">{editingId ? 'Salvar Alterações' : 'Adicionar Evento'}</button>
-              {editingId && <button type="button" onClick={handleCancelEdit} className="btn-secondary">Cancelar</button>}
+        <div className="admin-form-container card">
+          <h2>{editingId ? 'Editar Evento' : 'Cadastrar Novo Evento'}</h2>
+          <form onSubmit={handleSubmit}>
+            {/* ... campos do formulário ... */}
+            <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Nome do Evento" required />
+            <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Descrição"></textarea>
+            <input type="text" name="slug" value={formData.slug} onChange={handleChange} placeholder="Slug (ex: sbrc, sbbd)" required />
+            <div className="form-buttons">
+              <button type="submit" className="btn-primary">{editingId ? 'Salvar Alterações' : 'Cadastrar Evento'}</button>
+              {editingId && <button type="button" className="btn-secondary" onClick={resetForm}>Cancelar</button>}
             </div>
           </form>
         </div>
 
-        {/* Listagem de Eventos */}
-        <div className="admin-section">
+        <div className="admin-list-container">
           <h2>Eventos Cadastrados</h2>
-          <ul className="event-list">
-            {events.map(event => (
-              <li key={event.id} className="event-item">
-                <span>{event.name} ({event.slug})</span>
-                <div className="event-actions">
-                  {/* BOTÃO ATUALIZADO AQUI */}
-                  <Link to={`/admin/eventos/${event.id}/edicoes`} className="btn-primary">
-                    Gerir Edições
-                  </Link>
-                  <button onClick={() => handleEdit(event)} className="btn-secondary">Editar</button>
-                  <button onClick={() => handleDelete(event.id)} className="btn-danger">Excluir</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {loading && <p>A carregar eventos...</p>}
+          {error && <p className="error-message">{error}</p>}
+          {!loading && !error && (
+            <ul>
+              {events.map(event => (
+                <li key={event.id} className="card">
+                  <div>
+                    <strong>{event.name}</strong>
+                    <span>Slug: {event.slug}</span>
+                  </div>
+                  <div className="item-actions">
+                    <Link to={`/admin/eventos/${event.id}/edicoes`} className="btn-primary">
+                      Gerir Edições
+                    </Link>
+                    <button onClick={() => handleEdit(event)} className="btn-secondary">Editar</button>
+                    <button onClick={() => handleDelete(event.id)} className="btn-danger">Excluir</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </main>
