@@ -7,14 +7,9 @@ const supabase = createClient(
 );
 
 const eventController = {
-  // GET /events - Lista todos os eventos
   getAll: async (req, res) => {
     try {
-      // CORREÇÃO: Usar o nome da tabela em inglês
-      const { data, error } = await supabase
-        .from('events')
-        .select('*');
-
+      const { data, error } = await supabase.from('events').select('*');
       if (error) throw error;
       res.json(data);
     } catch (error) {
@@ -22,15 +17,28 @@ const eventController = {
     }
   },
 
-  // POST /events - Cria um novo evento
+  getById: async (req, res) => {
+    const { id } = req.params;
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      if (!data) return res.status(404).json({ error: 'Evento não encontrado.' });
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+  
   create: async (req, res) => {
-    // CORREÇÃO: Usar os nomes dos campos em inglês
     const { name, description, slug } = req.body;
     if (!name || !slug) {
       return res.status(400).json({ error: 'Nome e slug do evento são obrigatórios.' });
     }
     try {
-      // CORREÇÃO: Usar os nomes da tabela e colunas em inglês
       const { data, error } = await supabase
         .from('events')
         .insert([{ name, description, slug }])
@@ -47,24 +55,18 @@ const eventController = {
     }
   },
 
-  // PUT /events/:id - Atualiza evento
   update: async (req, res) => {
     const { id } = req.params;
-    // CORREÇÃO: Usar os nomes dos campos em inglês
     const { name, description, slug } = req.body;
-
     if (!name && !description && !slug) {
       return res.status(400).json({ error: 'Nenhum campo fornecido para atualização.' });
     }
-
     try {
-      // CORREÇÃO: Usar os nomes da tabela e colunas em inglês
       const { data, error } = await supabase
         .from('events')
         .update({ name, description, slug })
         .eq('id', id)
         .select();
-
       if (error) throw error;
       if (data.length === 0) {
         return res.status(404).json({ error: 'Evento não encontrado para o ID fornecido.' });
@@ -75,17 +77,14 @@ const eventController = {
     }
   },
 
-  // DELETE /events/:id - Deleta evento
   delete: async (req, res) => {
     const { id } = req.params;
     try {
-      // CORREÇÃO: Usar o nome da tabela em inglês
       const { data, error } = await supabase
         .from('events')
         .delete()
         .eq('id', id)
         .select();
-
       if (error) throw error;
       if (data.length === 0) {
         return res.status(404).json({ error: 'Evento não encontrado para o ID fornecido.' });
@@ -96,14 +95,12 @@ const eventController = {
     }
   },
 
-  // Home Page de Evento
   getEventHomePage: async (req, res) => {
     const { slug } = req.params;
     try {
-      // ATENÇÃO: Verifique se o nome da tabela de edições é 'event_editions'
       const { data, error } = await supabase
-        .from('events') // CORREÇÃO
-        .select('*, editions:event_editions(*)') // SUGESTÃO: 'editions:event_editions(*)'
+        .from('events')
+        .select('*, editions:event_editions(*)')
         .eq('slug', slug)
         .single();
       if (error) throw error;
@@ -114,50 +111,56 @@ const eventController = {
     }
   },
 
-  // Rota: POST /events/:eventId/editions
+  // --- FUNÇÃO A SER ATUALIZADA NO BACKEND ---
   createEdition: async (req, res) => {
     const { eventId } = req.params;
-    // ATENÇÃO: Verifique se os nomes das colunas são 'year' e 'location'
-    const { year, location } = req.body;
+    // --- CORREÇÃO: Aceitar os novos campos obrigatórios ---
+    const { year, location, name, slug } = req.body;
 
-    if (!year) {
-      return res.status(400).json({ error: 'O ano da edição é obrigatório.' });
+    if (!year || !name || !slug) {
+      return res.status(400).json({ error: 'Ano, Nome e Slug da edição são obrigatórios.' });
     }
 
     try {
-      // ATENÇÃO: Verifique se o nome da tabela de edições é 'event_editions'
       const { data, error } = await supabase
-        .from('event_editions') // SUGESTÃO
+        .from('event_editions')
         .insert([{
           event_id: eventId,
           year,
-          location
+          location,
+          name, // <-- Adicionado
+          slug  // <-- Adicionado
         }])
         .select();
 
       if (error) {
-        if (error.code === '23503') {
+        if (error.code === '23503') { // Foreign Key
           return res.status(404).json({ error: `Evento com ID ${eventId} não encontrado.` });
+        }
+        if (error.code === '23505') { // Unique constraint (slug)
+          return res.status(409).json({ error: 'O slug para esta edição já está em uso.' });
         }
         throw error;
       }
       res.status(201).json(data[0]);
+    // } catch (error) {
+    //   res.status(500).json({ error: error.message });
+    // }
     } catch (error) {
+      // --- DEBUGGING: Adicionado para ver o erro completo no terminal do backend ---
+      console.error('ERRO DETALHADO DO SUPABASE AO CRIAR EDIÇÃO:', error); 
       res.status(500).json({ error: error.message });
     }
   },
-
-  // Rota: GET /events/:eventId/editions
+  
   getAllEditions: async (req, res) => {
     const { eventId } = req.params;
     try {
-      // ATENÇÃO: Verifique se o nome da tabela de edições é 'event_editions'
       const { data, error } = await supabase
-        .from('event_editions') // SUGESTÃO
+        .from('event_editions')
         .select('*')
         .eq('event_id', eventId)
-        .order('year', { ascending: false }); // SUGESTÃO: 'year'
-
+        .order('year', { ascending: false });
       if (error) throw error;
       res.json(data);
     } catch (error) {
@@ -167,3 +170,4 @@ const eventController = {
 };
 
 module.exports = eventController;
+

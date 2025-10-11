@@ -9,7 +9,7 @@ import ArticleAdminPage from './pages/ArticleAdminPage';
 import BibtexImportPage from './pages/BibtexImportPage';
 import PublicEventPage from './pages/PublicEventPage';
 import PublicEditionPage from './pages/PublicEditionPage';
-import AuthorPage from './pages/AuthorPage'; // Nova página
+import AuthorPage from './pages/AuthorPage';
 
 // Importando componentes de layout
 import Header from './components/Header';
@@ -23,16 +23,16 @@ function App() {
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/eventos/:eventSlug" element={<PublicEventPage />} />
-          <Route path="/eventos/:eventSlug/:editionYear" element={<PublicEditionPage />} />
-          <Route path="/autores/:authorName" element={<AuthorPage />} /> {/* Nova Rota */}
+          <Route path="/events/slug/:eventSlug" element={<PublicEventPage />} />
+          <Route path="/events/slug/:eventSlug/:editionYear" element={<PublicEditionPage />} />
+          <Route path="/authors/:authorName" element={<AuthorPage />} />
 
           {/* Rotas de Admin */}
-          <Route path="/admin" element={<Navigate to="/admin/eventos" />} />
-          <Route path="/admin/eventos" element={<AdminPage />} />
-          <Route path="/admin/eventos/:eventId/edicoes" element={<EventEditionsPage />} />
-          <Route path="/admin/artigos" element={<ArticleAdminPage />} />
-          <Route path="/admin/importar" element={<BibtexImportPage />} />
+          <Route path="/admin" element={<Navigate to="/admin/events" />} />
+          <Route path="/admin/events" element={<AdminPage />} />
+          <Route path="/admin/events/:eventId/editions" element={<EventEditionsPage />} />
+          <Route path="/admin/articles" element={<ArticleAdminPage />} />
+          <Route path="/admin/import" element={<BibtexImportPage />} />
 
         </Routes>
         <Footer />
