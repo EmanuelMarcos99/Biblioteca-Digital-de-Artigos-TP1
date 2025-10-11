@@ -20,7 +20,11 @@ require('dotenv').config();
 const articleRoutes = require('./routes/articleRoutes');
 const userRoutes = require('./routes/userRoutes');
 const authorRoutes = require('./routes/authRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const editionRoutes = require('./routes/editionRoutes');
 
+app.use('/api/edition', editionRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auths', authorRoutes);
