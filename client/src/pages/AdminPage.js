@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api'; // Importar o nosso serviço de API
+import api from '../services/api';
 import './style/AdminPage.css';
 
 function AdminPage() {
   const [events, setEvents] = useState([]);
+  // --- CORREÇÃO: Usar os nomes dos campos em inglês para corresponder ao backend ---
   const [formData, setFormData] = useState({ name: '', description: '', slug: '' });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Função para buscar os eventos da API
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      // A rota no backend é /api/eventos
-      const response = await api.get('/eventos');
+      const response = await api.get('/events');
       setEvents(response.data);
       setError(null);
     } catch (err) {
@@ -26,7 +25,6 @@ function AdminPage() {
     }
   };
 
-  // Buscar os dados iniciais quando o componente é montado
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -38,41 +36,45 @@ function AdminPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // --- CORREÇÃO: Validar 'name' em vez de 'nome' ---
     if (!formData.name || !formData.slug) {
       alert('Nome e Slug são obrigatórios.');
       return;
     }
 
     try {
+      // O objeto formData já está no formato correto { name, description, slug }
       if (editingId) {
-        // --- ATENÇÃO: Lógica de Atualização (PUT) ---
-        const response = await api.put(`/eventos/${editingId}`, formData);
+        const response = await api.put(`/events/${editingId}`, formData);
         setEvents(events.map(event => (event.id === editingId ? response.data : event)));
       } else {
-        // --- ATENÇÃO: Lógica de Criação (POST) ---
-        const response = await api.post('/eventos', formData);
+        const response = await api.post('/events', formData);
         setEvents([...events, response.data]);
       }
       resetForm();
+      setError(null);
     } catch (err) {
-      setError('Ocorreu um erro ao guardar o evento.');
+      const errorMessage = err.response?.data?.error || 'Ocorreu um erro ao guardar o evento.';
+      setError(errorMessage);
       console.error("Erro ao guardar evento:", err);
     }
   };
   
   const handleEdit = (event) => {
     setEditingId(event.id);
+    // --- CORREÇÃO: Usar os nomes dos campos em inglês ---
     setFormData({ name: event.name, description: event.description || '', slug: event.slug });
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Tem a certeza que deseja excluir este evento?')) {
       try {
-        // --- ATENÇÃO: Lógica de Exclusão (DELETE) ---
-        await api.delete(`/eventos/${id}`);
+        await api.delete(`/events/${id}`);
         setEvents(events.filter(event => event.id !== id));
+        setError(null);
       } catch (err) {
-        setError('Ocorreu um erro ao excluir o evento.');
+        const errorMessage = err.response?.data?.error || 'Ocorreu um erro ao excluir o evento.';
+        setError(errorMessage);
         console.error("Erro ao excluir evento:", err);
       }
     }
@@ -80,6 +82,7 @@ function AdminPage() {
 
   const resetForm = () => {
     setEditingId(null);
+    // --- CORREÇÃO: Usar os nomes dos campos em inglês ---
     setFormData({ name: '', description: '', slug: '' });
   };
 
@@ -88,10 +91,12 @@ function AdminPage() {
       <div className="admin-page">
         <h1>Gestão de Eventos</h1>
 
+        {error && <p className="error-message card">{error}</p>}
+
         <div className="admin-form-container card">
           <h2>{editingId ? 'Editar Evento' : 'Cadastrar Novo Evento'}</h2>
           <form onSubmit={handleSubmit}>
-            {/* ... campos do formulário ... */}
+            {/* --- CORREÇÃO: Atualizar o atributo 'name' dos inputs --- */}
             <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Nome do Evento" required />
             <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Descrição"></textarea>
             <input type="text" name="slug" value={formData.slug} onChange={handleChange} placeholder="Slug (ex: sbrc, sbbd)" required />
@@ -105,17 +110,17 @@ function AdminPage() {
         <div className="admin-list-container">
           <h2>Eventos Cadastrados</h2>
           {loading && <p>A carregar eventos...</p>}
-          {error && <p className="error-message">{error}</p>}
           {!loading && !error && (
             <ul>
               {events.map(event => (
                 <li key={event.id} className="card">
                   <div>
-                    <strong>{event.name}</strong>
+                    <strong>{event.name}</strong> {/* CORREÇÃO: 'event.name' */}
                     <span>Slug: {event.slug}</span>
                   </div>
                   <div className="item-actions">
-                    <Link to={`/admin/eventos/${event.id}/edicoes`} className="btn-primary">
+                    {/* ATENÇÃO: Esta rota também pode precisar de ser atualizada para inglês no App.js */}
+                    <Link to={`/admin/events/${event.id}/editions`} className="btn-primary">
                       Gerir Edições
                     </Link>
                     <button onClick={() => handleEdit(event)} className="btn-secondary">Editar</button>
