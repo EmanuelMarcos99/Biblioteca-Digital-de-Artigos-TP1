@@ -20,10 +20,15 @@ require('dotenv').config();
 const articleRoutes = require('./routes/articleRoutes');
 const userRoutes = require('./routes/userRoutes');
 const authorRoutes = require('./routes/authRoutes');
+const eventRoutes = require('./routes/eventRoute'); 
+const editionRoutes = require('./routes/editionRoute');
+
 
 app.use('/api/articles', articleRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auths', authorRoutes);
+app.use('/api/eventos', eventRoutes);
+app.use('/api/edicoes', editionRoutes);
 
 
 const PORT = process.env.PORT || 3000;
