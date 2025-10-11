@@ -9,7 +9,7 @@ const supabase = createClient(
 const eventController = {
   getAll: async (req, res) => {
     try {
-      const { data, error } = await supabase.from('events').select('*');
+      const { data, error } = await supabase.from('events').select('name, editions:event_editions(id, year, name)');
       if (error) throw error;
       res.json(data);
     } catch (error) {
@@ -143,12 +143,7 @@ const eventController = {
         throw error;
       }
       res.status(201).json(data[0]);
-    // } catch (error) {
-    //   res.status(500).json({ error: error.message });
-    // }
     } catch (error) {
-      // --- DEBUGGING: Adicionado para ver o erro completo no terminal do backend ---
-      console.error('ERRO DETALHADO DO SUPABASE AO CRIAR EDIÇÃO:', error); 
       res.status(500).json({ error: error.message });
     }
   },

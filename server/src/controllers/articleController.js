@@ -144,7 +144,7 @@ const articleController = {
             if (uploadedFile && fs.existsSync(uploadedFile.path)) {
                 fs.unlinkSync(uploadedFile.path); 
             }
-            console.error('Erro no processamento do artigo:', error.message);
+            console.error('ERRO DETALHADO DO SUPABASE AO CRIAR ARTIGO:', error);
             res.status(500).json({ error: 'Falha no upload ou inserção: ' + error.message });
         }
     },
