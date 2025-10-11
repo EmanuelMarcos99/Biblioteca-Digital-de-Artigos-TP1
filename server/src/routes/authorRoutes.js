@@ -4,6 +4,6 @@ const authorController = require('../controllers/authorController');
 
 // Rota para a Home Page de Autor (Sprint 7)
 // GET /autores/:authorName/artigos - Agrupa por ano
-router.get('/:authorName/artigos', authorController.getArticlesByAuthor);
+router.get('/:authorName/articles', authorController.getArticlesByAuthor);
 
 module.exports = router;
