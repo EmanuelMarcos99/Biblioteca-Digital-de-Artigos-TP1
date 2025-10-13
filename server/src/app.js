@@ -23,13 +23,12 @@ const authorRoutes = require('./routes/authorRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const editionRoutes = require('./routes/editionRoutes');
 
-app.use('/api/edition', editionRoutes);
+app.use('/api/editions', editionRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/authors', authorRoutes);
 app.use('/api/events', eventRoutes);
-app.use('/api/edition', editionRoutes);
 
 
 const PORT = process.env.PORT || 3000;
