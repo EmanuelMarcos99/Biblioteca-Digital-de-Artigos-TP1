@@ -115,7 +115,7 @@ Este projeto foi construído utilizando as seguintes tecnologias:
 
 ---
 
-UML Diagrams
+Diagramas UML
 Diagrama de Pacotes (Arquitetura do Sistema)
 
 Este diagrama mostra a organização de alto nível do projeto, separando as responsabilidades entre o cliente (Frontend), o servidor (Backend) e os serviços externos.
@@ -147,7 +147,6 @@ graph TD
     style Frontend fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
     style Backend fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
     style "Serviços Externos" fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
-
 
 Diagrama de Sequência (Cadastro de Novo Artigo)
 
