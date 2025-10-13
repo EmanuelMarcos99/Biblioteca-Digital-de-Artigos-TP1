@@ -115,13 +115,19 @@ Este projeto foi construído utilizando as seguintes tecnologias:
 
 ---
 
-Diagramas UML
-Diagrama de Pacotes (Arquitetura do Sistema)
+## Diagramas UML
+## Diagrama de Pacotes (Arquitetura do Sistema)
 
 Este diagrama mostra a organização de alto nível do projeto, separando as responsabilidades entre o cliente (Frontend), o servidor (Backend) e os serviços externos.
+ 
+## Arquitetura do Sistema
 
-graph TD
+## Diagrama de Pacotes
+
+Aqui está a visão geral da arquitetura do sistema:
+
 ```mermaid
+graph TD
     subgraph Frontend (client)
         direction LR
         A[React UI] --> B{API Service};
@@ -149,12 +155,13 @@ graph TD
     style Backend fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
     style "Serviços Externos" fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
 
-Diagrama de Sequência (Cadastro de Novo Artigo)
+
+##  Diagrama de Sequência (Cadastro de Novo Artigo)
 
 Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
 
-sequenceDiagram
 ```mermaid
+sequenceDiagram
     participant Admin as Administrador
     participant ReactApp as Frontend (React)
     participant Server as Backend (Node.js)
