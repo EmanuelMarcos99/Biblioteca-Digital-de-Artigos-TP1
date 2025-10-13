@@ -148,6 +148,7 @@ graph TD
     style Backend fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
     style "Serviços Externos" fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
 
+
 Diagrama de Sequência (Cadastro de Novo Artigo)
 
 Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
@@ -166,4 +167,3 @@ sequenceDiagram
     Supabase-->>-Server: Retorna os dados do artigo criado
     Server-->>-ReactApp: Resposta 201 (Created) com os dados do artigo
     ReactApp-->>-Admin: Exibe mensagem de sucesso e atualiza a lista
-
