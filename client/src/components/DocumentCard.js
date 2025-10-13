@@ -37,15 +37,16 @@ function DocumentCard({ doc, searchTerm }) {
       </h3>
       <p className="doc-authors">{authorLinks}</p>
       
-      <p className="doc-publication">
-        Publicado em: 
-        {/* CORREÇÃO: Usar a rota com /slug/ para corresponder ao backend */}
-        <Link to={`/events/slug/${doc.eventSlug}`}>
-            <Highlighted text={doc.publication} highlight={searchTerm} />, {doc.year}
-        </Link>
-      </p>
+      {/* --- CORREÇÃO FINAL: Renderizar esta secção apenas se houver dados de publicação --- */}
+      {doc.publication && doc.year && (
+        <p className="doc-publication">
+          Publicado em: 
+          <Link to={`/events/slug/${doc.eventSlug}`}>
+              <Highlighted text={doc.publication} highlight={searchTerm} />, {doc.year}
+          </Link>
+        </p>
+      )}
 
-      {/* --- CORREÇÃO FINAL: Usar 'doc.pdf_url' em vez de 'doc.url' --- */}
       <a href={doc.pdf_url} className="doc-link" target="_blank" rel="noopener noreferrer">
         Aceder ao Artigo
       </a>
