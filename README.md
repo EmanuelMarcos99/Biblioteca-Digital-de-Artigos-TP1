@@ -128,34 +128,23 @@ Aqui está a visão geral da arquitetura do sistema:
 
 ```mermaid
 graph TD
-    subgraph Frontend (client)
-        direction LR
-        A[React UI] --> B{API Service};
-    end
+    A[Frontend (client)] --> B{API Service};
+    B --> C{API Routes};
+    C --> D[Controllers];
+    D --> E{Supabase Client};
+    E --> F[(Supabase DB)];
+    E --> G[(Supabase Storage)];
+    E --> H[(Supabase Auth)];
 
-    subgraph Backend (server)
-        direction LR
-        C{API Routes} --> D[Controllers];
-        D --> E{Supabase Client};
-    end
-
-    subgraph "Serviços Externos"
-        direction LR
-        F[(Supabase DB)];
-        G[(Supabase Storage)];
-        H[(Supabase Auth)];
-    end
-
-    B --> C;
-    E --> F;
-    E --> G;
-    E --> H;
-
-    style Frontend fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
-    style Backend fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
-    style "Serviços Externos" fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
-
-
+    style A fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
+    style B fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
+    style C fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
+    style D fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
+    style E fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
+    style F fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
+    style G fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
+    style H fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
+    
 ##  Diagrama de Sequência (Cadastro de Novo Artigo)
 
 Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
