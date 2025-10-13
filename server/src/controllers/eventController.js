@@ -162,6 +162,58 @@ const eventController = {
       res.status(500).json({ error: error.message });
     }
   },
+
+  create: async (req, res) => {
+        const { name, description, slug } = req.body;
+        if (!name || !slug) {
+            return res.status(400).json({ error: 'Nome e slug do evento são obrigatórios.' });
+        }
+        
+        let newEventData; // Variável para armazenar os dados do evento criado
+
+        try {
+            // 1. CRIA O NOVO EVENTO
+            const { data, error } = await supabase
+                .from('events')
+                .insert([{ name, description, slug }])
+                .select();
+            
+            if (error) {
+                if (error.code === '23505') {
+                    return res.status(409).json({ error: 'O slug fornecido já está em uso.' });
+                }
+                throw error;
+            }
+
+            newEventData = data[0]; // Guarda os dados do evento criado para o email
+
+            // 2. BUSCA TODOS OS EMAILS DA TABELA 'subscribes'
+            const { data: subscribers, error: subError } = await supabase
+                .from('subscribes') // Assumindo o nome da tabela como 'subscribes'
+                .select('email');
+
+            if (subError) {
+                console.error("Erro ao buscar inscritos para email:", subError.message);
+                // NOTA: Não jogamos erro aqui para não falhar a criação do evento por causa do email
+            }
+
+            // 3. ENVIA O EMAIL DE NOTIFICAÇÃO
+            if (subscribers && subscribers.length > 0) {
+                // Mapeia a lista de objetos { email: '...' } para um array simples de strings ['email1', 'email2']
+                const recipientEmails = subscribers.map(sub => sub.email); 
+                
+                // Envia o email. Isso deve ser feito de forma assíncrona para não bloquear a resposta.
+                // É altamente recomendável envolver isso em um bloco try/catch real na sua função de envio.
+                sendNotificationEmail(recipientEmails, newEventData);
+            }
+            
+            // Retorna a resposta de sucesso APÓS a criação e o disparo do email
+            res.status(201).json(newEventData);
+            
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
 };
 
 module.exports = eventController;
