@@ -7,7 +7,6 @@ const Highlighted = ({ text = '', highlight = '' }) => {
   if (!highlight.trim()) {
     return <span>{text}</span>;
   }
-  // Escapa caracteres especiais para a RegEx
   const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${escapedHighlight})`, 'gi');
   const parts = text.split(regex);
@@ -21,11 +20,10 @@ const Highlighted = ({ text = '', highlight = '' }) => {
   );
 };
 
-function DocumentCard({ doc, searchTerm }) { // Recebendo o searchTerm
-  // Transforma a string de autores em links individuais, com destaque
+function DocumentCard({ doc, searchTerm }) {
   const authorLinks = doc.authors.split(',').map((author, index, array) => (
     <span key={author.trim()}>
-      <Link to={`/autores/${encodeURIComponent(author.trim())}`}>
+      <Link to={`/authors/${encodeURIComponent(author.trim())}`}>
         <Highlighted text={author.trim()} highlight={searchTerm} />
       </Link>
       {index < array.length - 1 ? ', ' : ''}
@@ -41,12 +39,14 @@ function DocumentCard({ doc, searchTerm }) { // Recebendo o searchTerm
       
       <p className="doc-publication">
         Publicado em: 
-        <Link to={`/eventos/${doc.eventSlug}`}>
+        {/* CORREÇÃO: Usar a rota com /slug/ para corresponder ao backend */}
+        <Link to={`/events/slug/${doc.eventSlug}`}>
             <Highlighted text={doc.publication} highlight={searchTerm} />, {doc.year}
         </Link>
       </p>
 
-      <a href={doc.url} className="doc-link" target="_blank" rel="noopener noreferrer">
+      {/* --- CORREÇÃO FINAL: Usar 'doc.pdf_url' em vez de 'doc.url' --- */}
+      <a href={doc.pdf_url} className="doc-link" target="_blank" rel="noopener noreferrer">
         Aceder ao Artigo
       </a>
     </div>

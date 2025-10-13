@@ -1,120 +1,107 @@
+/* Estilos gerais da página de administração */
 .admin-page {
-  padding: 2rem 0;
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
 }
 
 .admin-page h1 {
   text-align: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 30px;
 }
 
-.admin-page p {
-  text-align: center;
-  margin-bottom: 3rem;
-  color: var(--color-text-secondary);
-}
-
-.admin-section {
-  background-color: #ffffff;
-  border: 1px solid var(--color-border);
+.card {
+  background-color: #fff;
   border-radius: 8px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--card-shadow);
+  padding: 25px;
+  margin-bottom: 20px;
 }
 
-.admin-section h2 {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 0.5rem;
+/* --- MELHORIAS NO FORMULÁRIO --- */
+.admin-form-container form {
+  display: flex;
+  flex-direction: column; /* Coloca os campos um abaixo do outro */
+  gap: 15px; /* Adiciona espaçamento entre os campos */
 }
 
-/* Formulário */
-.event-form .form-group {
-  margin-bottom: 1rem;
-}
-
-.event-form label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.event-form input[type="text"],
-.event-form textarea {
+/* Estilos para todos os inputs e textarea do formulário */
+.admin-form-container input[type="text"],
+.admin-form-container textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 5px;
+  padding: 12px;
   font-size: 1rem;
-  box-sizing: border-box; /* Garante que padding não afete a largura total */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Garante que o padding não aumente a largura */
+  font-family: inherit; /* Usa a mesma fonte do resto da página */
 }
 
-.event-form textarea {
-  min-height: 100px;
-  resize: vertical;
+.admin-form-container textarea {
+  min-height: 100px; /* Altura mínima para a área de descrição */
+  resize: vertical; /* Permite redimensionar apenas na vertical */
 }
 
-/* Botões */
-.btn-primary, .btn-secondary, .btn-danger {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+.form-buttons {
+  display: flex;
+  gap: 10px; /* Espaçamento entre os botões */
+  justify-content: flex-end; /* Alinha os botões à direita */
+  margin-top: 10px;
 }
 
-.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-}
-
-/* Lista de Eventos */
-.event-list {
+/* --- MELHORIAS NA LISTA --- */
+.admin-list-container ul {
   list-style: none;
   padding: 0;
 }
 
-.event-item {
+.admin-list-container li.card {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Alinha o conteúdo e os botões */
   align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap; /* Permite que os botões quebrem a linha em ecrãs pequenos */
+  gap: 15px;
 }
 
-.event-item:last-child {
-  border-bottom: none;
+.admin-list-container li div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.event-item span {
-  font-weight: 500;
+.item-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0; /* Impede que os botões encolham */
+  flex-wrap: wrap; /* Permite que os botões quebrem a linha */
+  justify-content: center; /* Centraliza os botões quando quebram a linha */
 }
 
-.event-actions button {
-  margin-left: 0.5rem;
+/* Estilos para botões (reutilizáveis) */
+.btn-primary, .btn-secondary, .btn-danger {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: #004a9e; }
+
+.btn-secondary { background-color: #6c757d; color: white; }
+.btn-secondary:hover { background-color: #5a6268; }
+
+.btn-danger { background-color: #dc3545; color: white; }
+.btn-danger:hover { background-color: #c82333; }
+
+.btn-primary:active, .btn-secondary:active, .btn-danger:active {
+  transform: translateY(1px);
+}
+
+.error-message {
+  color: #dc3545;
+  font-weight: 600;
 }

@@ -1,76 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api'; // Importar o nosso serviço de API
 import './style/BibtexImportPage.css';
 
 function BibtexImportPage() {
+  const [editions, setEditions] = useState([]);
+  const [selectedEdition, setSelectedEdition] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Busca inicial das edições para preencher o <select>
+  useEffect(() => {
+    const fetchEditions = async () => {
+      try {
+        const eventsResponse = await api.get('/events');
+        const allEditions = eventsResponse.data.flatMap(event =>
+          Array.isArray(event.editions) ? event.editions.map(edition => ({
+            ...edition,
+            eventName: event.name,
+          })) : []
+        );
+        setEditions(allEditions);
+      } catch (err) {
+        setError('Falha ao carregar a lista de edições.');
+        console.error("Erro ao buscar edições:", err);
+      }
+    };
+    fetchEditions();
+  }, []);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.name.endsWith('.bib')) {
-      setSelectedFile(file);
-      setMessage(`Ficheiro selecionado: ${file.name}`);
-      setIsError(false);
-    } else {
-      setSelectedFile(null);
-      setMessage('Por favor, selecione um ficheiro .bib válido.');
-      setIsError(true);
-    }
+    setSelectedFile(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
+  const handleEditionChange = (e) => {
+    setSelectedEdition(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedFile) {
-      setMessage('Nenhum ficheiro selecionado.');
-      setIsError(true);
+    if (!selectedFile || !selectedEdition) {
+      setError('Por favor, selecione uma edição e um ficheiro BibTeX.');
       return;
     }
 
-    // ATENÇÃO: Lógica de UPLOAD (POST /api/artigos/importar-bibtex)
-    // Aqui você usaria FormData para enviar o 'selectedFile' para o backend.
-    
-    // Simulação de sucesso
-    console.log('Enviando ficheiro:', selectedFile.name);
-    setMessage('Importação concluída com sucesso! 15 artigos foram adicionados.');
-    setIsError(false);
-    setSelectedFile(null); // Limpa o input
-    
-    // Simulação de erro (para testar)
-    // setMessage('Ocorreu um erro ao processar o ficheiro. Verifique o formato.');
-    // setIsError(true);
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    const formData = new FormData();
+    formData.append('bibtexFile', selectedFile);
+    formData.append('edition_id', selectedEdition);
+
+    try {
+      // A rota no backend é /api/articles/import-bibtex
+      const response = await api.post('/articles/import-bibtex', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setMessage(response.data.message); // Exibe a mensagem de sucesso do backend
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'Ocorreu um erro durante a importação.';
+      setError(errorMessage);
+      console.error("Erro na importação BibTeX:", err);
+    } finally {
+      setLoading(false);
+      // Limpa os campos após a submissão
+      setSelectedFile(null);
+      setSelectedEdition('');
+      document.getElementById('bibtexFileInput').value = '';
+    }
   };
 
   return (
     <main className="container">
       <div className="import-page">
         <h1>Importação em Massa via BibTeX</h1>
-        <p>Faça o upload de um ficheiro <code>.bib</code> para cadastrar múltiplos artigos de uma só vez.</p>
-
-        <form onSubmit={handleSubmit} className="upload-form">
+        <p>Selecione a edição do evento e o ficheiro .bib para importar múltiplos artigos de uma só vez.</p>
+        
+        <form onSubmit={handleSubmit} className="import-form card">
           <div className="form-group">
-            <label htmlFor="bibtex-file">Selecionar Ficheiro .bib</label>
-            <input 
-              type="file" 
-              id="bibtex-file" 
-              accept=".bib" 
-              onChange={handleFileChange} 
-            />
+            <label htmlFor="editionSelect">Edição do Evento de Destino:</label>
+            <select id="editionSelect" value={selectedEdition} onChange={handleEditionChange} required>
+              <option value="">Selecione uma edição...</option>
+              {editions.map(edition => (
+                <option key={edition.id} value={edition.id}>
+                  {edition.eventName} - {edition.name} ({edition.year})
+                </option>
+              ))}
+            </select>
           </div>
 
-          <button type="submit" className="btn-primary" disabled={!selectedFile}>
-            Importar Artigos
+          <div className="form-group">
+            <label htmlFor="bibtexFileInput">Ficheiro BibTeX (.bib):</label>
+            <input id="bibtexFileInput" type="file" onChange={handleFileChange} accept=".bib" required />
+          </div>
+
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'A Importar...' : 'Importar Artigos'}
           </button>
         </form>
 
-        {message && (
-          <div className={`feedback-message ${isError ? 'error' : 'success'}`}>
-            {message}
-          </div>
-        )}
+        {message && <p className="success-message card">{message}</p>}
+        {error && <p className="error-message card">{error}</p>}
+
       </div>
     </main>
   );
 }
 
 export default BibtexImportPage;
+

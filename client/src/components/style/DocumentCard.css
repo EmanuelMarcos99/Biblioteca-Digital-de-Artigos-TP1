@@ -1,47 +1,60 @@
 .doc-card {
   background-color: #fff;
   border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
+  padding: 25px;
+  /* A margem inferior foi removida. O 'gap' da grelha agora controla o espaçamento. */
+  box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.doc-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .doc-title {
   font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0 0 10px 0;
-  color: #333;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #222;
+  /* Garante que o título não empurre os outros elementos para baixo */
+  flex-grow: 1; 
 }
 
 .doc-authors {
   font-size: 0.9rem;
   color: #666;
-  margin: 0 0 15px 0;
-  font-style: italic;
+  margin-bottom: 15px;
+}
+
+.doc-authors a {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+.doc-authors a:hover {
+  text-decoration: underline;
 }
 
 .doc-publication {
-  font-size: 0.9rem;
-  color: #555;
-  margin: 0 0 20px 0;
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 20px;
 }
-
 .doc-publication a {
-    color: #0056b3;
-    text-decoration: none;
-    font-weight: 600;
+  color: #555;
+  font-weight: 600;
+  text-decoration: none;
 }
-
 .doc-publication a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .doc-link {
-  margin-top: auto; /* Empurra o link para a base do card */
-  align-self: flex-start;
-  background-color: #0056b3;
+  margin-top: auto; /* Empurra o botão para a base do cartão */
+  align-self: flex-start; /* Alinha o botão à esquerda */
+  background-color: var(--primary-color);
   color: #fff;
   padding: 8px 15px;
   border-radius: 4px;
@@ -53,3 +66,4 @@
 .doc-link:hover {
   background-color: #003d82;
 }
+
