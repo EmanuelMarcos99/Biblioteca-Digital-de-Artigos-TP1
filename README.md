@@ -145,12 +145,7 @@ graph TD
     style F fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
     style G fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
     style H fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
-    
-##  Diagrama de Sequência (Cadastro de Novo Artigo)
 
-Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
-
-```mermaid
 sequenceDiagram
     participant Admin as Administrador
     participant ReactApp as Frontend (React)
