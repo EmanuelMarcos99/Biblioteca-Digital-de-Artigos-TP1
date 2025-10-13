@@ -9,7 +9,7 @@ const supabase = createClient(
 const eventController = {
   getAll: async (req, res) => {
     try {
-      const { data, error } = await supabase.from('events').select('name, editions:event_editions(id, year, name)');
+      const { data, error } = await supabase.from('events').select('*, editions:event_editions(*)');
       if (error) throw error;
       res.json(data);
     } catch (error) {
@@ -165,4 +165,3 @@ const eventController = {
 };
 
 module.exports = eventController;
-
