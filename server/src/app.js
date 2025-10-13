@@ -19,7 +19,7 @@ require('dotenv').config();
 
 const articleRoutes = require('./routes/articleRoutes');
 const userRoutes = require('./routes/userRoutes');
-const authorRoutes = require('./routes/authRoutes');
+const authorRoutes = require('./routes/authorRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const editionRoutes = require('./routes/editionRoutes');
 

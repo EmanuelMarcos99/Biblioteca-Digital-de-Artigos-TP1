@@ -5,8 +5,8 @@
 
 | Nome | Papel |
 | :--- | :--- |
-| Emanuel Figueiredo | Full-stack | 
-| Ezequiel Moreira | Full-stack | 
+| Emanuel Figueiredo | FrontEnd | 
+| Ezequiel Moreira | BackEnd | 
 
 ---
 
@@ -26,7 +26,7 @@ Este projeto foi construído utilizando as seguintes tecnologias:
 
 ## 🤖 Ferramenta de IA
 
-* **GitHub Copilot**
+* **GitHub Copilot : Claude 3.5 **
 
 ---
 
