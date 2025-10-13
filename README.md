@@ -111,3 +111,59 @@ Este projeto foi construído utilizando as seguintes tecnologias:
             Back-end: Rota de API para registro de subscrições e lógica de envio de email.
 
             Front-end: Formulário para subscrição de notificações por email.
+
+
+---
+
+UML Diagrams
+Diagrama de Pacotes (Arquitetura do Sistema)
+
+Este diagrama mostra a organização de alto nível do projeto, separando as responsabilidades entre o cliente (Frontend), o servidor (Backend) e os serviços externos.
+
+graph TD
+    subgraph Frontend (client)
+        direction LR
+        A[React UI] --> B{API Service};
+    end
+
+    subgraph Backend (server)
+        direction LR
+        C{API Routes} --> D[Controllers];
+        D --> E{Supabase Client};
+    end
+
+    subgraph "Serviços Externos"
+        direction LR
+        F[(Supabase DB)];
+        G[(Supabase Storage)];
+        H[(Supabase Auth)];
+    end
+
+    B --> C;
+    E --> F;
+    E --> G;
+    E --> H;
+
+    style Frontend fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
+    style Backend fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
+    style "Serviços Externos" fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
+
+Diagrama de Sequência (Cadastro de Novo Artigo)
+
+Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
+
+sequenceDiagram
+    participant Admin as Administrador
+    participant ReactApp as Frontend (React)
+    participant Server as Backend (Node.js)
+    participant Supabase as Supabase (BaaS)
+
+    Admin->>+ReactApp: Preenche o formulário e seleciona o PDF
+    ReactApp->>+Server: POST /api/articles/import-pdf (com dados e ficheiro)
+    Server->>+Supabase: Upload do ficheiro PDF para o Storage
+    Supabase-->>-Server: Retorna o URL público do PDF
+    Server->>+Supabase: INSERT na tabela 'articles' (com o URL do PDF)
+    Supabase-->>-Server: Retorna os dados do artigo criado
+    Server-->>-ReactApp: Resposta 201 (Created) com os dados do artigo
+    ReactApp-->>-Admin: Exibe mensagem de sucesso e atualiza a lista
+
