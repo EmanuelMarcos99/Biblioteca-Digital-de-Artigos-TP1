@@ -150,7 +150,6 @@ graph TD
 
 Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
 
-```mermaid
 sequenceDiagram
     participant Admin as Administrador
     participant ReactApp as Frontend_React
