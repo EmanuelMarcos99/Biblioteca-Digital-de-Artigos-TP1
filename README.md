@@ -128,13 +128,14 @@ Aqui está a visão geral da arquitetura do sistema:
 
 ```mermaid
 graph TD
-    A[Frontend (client)] --> B{API Service};
-    B --> C{API Routes};
-    C --> D[Controllers];
-    D --> E{Supabase Client};
-    E --> F[(Supabase DB)];
-    E --> G[(Supabase Storage)];
-    E --> H[(Supabase Auth)];
+    A[Frontend] --> B[API Service]
+    B --> C[API Routes]
+    C --> D[Controllers]
+    D --> E[Supabase Client]
+    E --> F[Supabase DB]
+    E --> G[Supabase Storage]
+    E --> H[Supabase Auth]
+
 
     style A fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
     style B fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
