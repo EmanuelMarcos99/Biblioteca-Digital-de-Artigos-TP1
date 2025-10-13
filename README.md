@@ -120,8 +120,8 @@ Diagrama de Pacotes (Arquitetura do Sistema)
 
 Este diagrama mostra a organização de alto nível do projeto, separando as responsabilidades entre o cliente (Frontend), o servidor (Backend) e os serviços externos.
 
-```mermaid
 graph TD
+```mermaid
     subgraph Frontend (client)
         direction LR
         A[React UI] --> B{API Service};
@@ -153,8 +153,8 @@ Diagrama de Sequência (Cadastro de Novo Artigo)
 
 Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
 
-```mermaid
 sequenceDiagram
+```mermaid
     participant Admin as Administrador
     participant ReactApp as Frontend (React)
     participant Server as Backend (Node.js)
