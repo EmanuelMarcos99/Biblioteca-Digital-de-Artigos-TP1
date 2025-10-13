@@ -112,7 +112,6 @@ Este projeto foi construído utilizando as seguintes tecnologias:
 
             Front-end: Formulário para subscrição de notificações por email.
 
-
 ---
 
 ## Diagramas UML
@@ -122,45 +121,9 @@ Este diagrama mostra a organização de alto nível do projeto, separando as res
  
 ## Arquitetura do Sistema
 
-## Diagrama de Pacotes
+![Diagrama de Pacotes](docs/diagrama-pacotes.png)
+*Diagrama de Pacotes - Arquitetura do Sistema*
 
-Aqui está a visão geral da arquitetura do sistema:
-
-```mermaid
-graph TD
-    A[Frontend] --> B[API Service]
-    B --> C[API Routes]
-    C --> D[Controllers]
-    D --> E[Supabase Client]
-    E --> F[Supabase DB]
-    E --> G[Supabase Storage]
-    E --> H[Supabase Auth]
-
-
-    style A fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
-    style B fill:#cde4ff,stroke:#99b8e2,stroke-width:2px
-    style C fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
-    style D fill:#d5f2d2,stroke:#a6c9a2,stroke-width:2px
-    style E fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
-    style F fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
-    style G fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
-    style H fill:#ffe0b3,stroke:#e6c499,stroke-width:2px
-
-## 🔁 Diagrama de Sequência - Cadastro de Novo Artigo
-
+![Diagrama de Sequência](docs/diagrama-sequencia.png)
 Este diagrama mostra o fluxo de execução passo a passo para uma das tarefas mais importantes do sistema: o cadastro de um novo artigo por um administrador, incluindo o upload do ficheiro PDF.
 
-sequenceDiagram
-    participant Admin as Administrador
-    participant ReactApp as Frontend_React
-    participant Server as Backend_NodeJS
-    participant Supabase as Supabase_BaaS
-
-    Admin->>+ReactApp: Preenche o formulário e seleciona o PDF
-    ReactApp->>+Server: POST /api/articles/import-pdf (com dados e ficheiro)
-    Server->>+Supabase: Upload do ficheiro PDF para o Storage
-    Supabase-->>-Server: Retorna o URL público do PDF
-    Server->>+Supabase: INSERT na tabela 'articles' (com o URL do PDF)
-    Supabase-->>-Server: Retorna os dados do artigo criado
-    Server-->>-ReactApp: Resposta 201 (Created) com os dados do artigo
-    ReactApp-->>-Admin: Exibe mensagem de sucesso e atualiza a lista
