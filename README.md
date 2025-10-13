@@ -30,7 +30,7 @@ Este projeto foi construído utilizando as seguintes tecnologias:
 
 ---
 
- Backlog da Sprint
+ ## Backlog da Sprint
 
     [✅] História 1: CRUD de Eventos
 
