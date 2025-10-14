@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
+const emailService = require('./emailService'); 
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
@@ -189,7 +191,7 @@ const eventController = {
 
             // 2. BUSCA TODOS OS EMAILS DA TABELA 'subscribes'
             const { data: subscribers, error: subError } = await supabase
-                .from('subscribes') // Assumindo o nome da tabela como 'subscribes'
+                .from('subscribers') // Assumindo o nome da tabela como 'subscribes'
                 .select('email');
 
             if (subError) {
@@ -201,10 +203,9 @@ const eventController = {
             if (subscribers && subscribers.length > 0) {
                 // Mapeia a lista de objetos { email: '...' } para um array simples de strings ['email1', 'email2']
                 const recipientEmails = subscribers.map(sub => sub.email); 
-                
                 // Envia o email. Isso deve ser feito de forma assíncrona para não bloquear a resposta.
                 // É altamente recomendável envolver isso em um bloco try/catch real na sua função de envio.
-                sendNotificationEmail(recipientEmails, newEventData);
+                emailService.sendNotificationEmail(recipientEmails, newEventData);
             }
             
             // Retorna a resposta de sucesso APÓS a criação e o disparo do email

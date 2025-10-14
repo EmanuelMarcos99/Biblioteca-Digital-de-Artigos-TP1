@@ -31,13 +31,6 @@ function parseBibtex(bibtexContent) {
     }
 }
 
-async function sendNotificationEmail(articleTitle, subscribers) {
-    if (subscribers.length === 0) {
-        console.log('Nenhum assinante para notificar.');
-        return;
-    }
-    console.log(`Simulando envio de e-mail sobre o novo artigo: "${articleTitle}" para ${subscribers.length} destinatários.`);
-}
 
 const articleController = {
     getAll: async (req, res) => {
@@ -133,7 +126,6 @@ const articleController = {
             if (newArticles.length > 0) {
                 const subscribers = await userController.getSubscribers();
                 const message = newArticles.length === 1 ? newArticles[0].title : `Importação de ${newArticles.length} novos artigos`;
-                sendNotificationEmail(message, subscribers);
             }
             
             res.status(200).json({ 

@@ -34,4 +34,6 @@ const sendNotificationEmail = async (recipients, eventData) => {
     }
 };
 
-module.exports = sendNotificationEmail;
+module.exports = { 
+    sendNotificationEmail 
+};
