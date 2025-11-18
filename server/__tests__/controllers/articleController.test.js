@@ -105,11 +105,9 @@ describe('ArticleController - Testes Completos', () => {
             send: jest.fn().mockReturnThis(),
         };
     });
-
     // ===========================
     // TESTES: getAll()
     // ===========================
-
     describe('getAll()', () => {
         const mockArticles = [
             { id: 1, title: 'Artigo 1' },
@@ -145,11 +143,9 @@ describe('ArticleController - Testes Completos', () => {
             expect(res.status).toHaveBeenCalledWith(500);
         });
     });
-
     // ===========================
     // TESTES: getById()
     // ===========================
-
     describe('getById()', () => {
         it('deve retornar artigo pelo ID', async () => {
             req.params.id = '1';
