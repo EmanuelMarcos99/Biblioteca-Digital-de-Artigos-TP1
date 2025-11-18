@@ -1,0 +1,9 @@
+{
+  "user": {
+    "id": 1,
+    "name": "Admin User",
+    "email": "admin@test.com",
+    "role": "admin"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE2MjM5MDIyfQ.mock_token_for_testing"
+}

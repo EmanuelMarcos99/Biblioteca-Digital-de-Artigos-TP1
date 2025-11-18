@@ -1,0 +1,12 @@
+# Cypress
+cypress/videos
+cypress/screenshots
+cypress/downloads
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env.local
+.env.test

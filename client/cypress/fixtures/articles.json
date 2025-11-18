@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "title": "Redes Definidas por Software: Uma Abordagem Prática",
+    "authors": "João Silva, Maria Santos",
+    "year": 2024,
+    "url": "https://storage.supabase.co/articles/article1.pdf",
+    "edition_id": 1,
+    "event_editions": {
+      "year": 2024,
+      "name": "SBRC 2024"
+    }
+  },
+  {
+    "id": 2,
+    "title": "Machine Learning aplicado à Segurança de Redes",
+    "authors": "Pedro Costa, Ana Lima",
+    "year": 2024,
+    "url": "https://storage.supabase.co/articles/article2.pdf",
+    "edition_id": 1,
+    "event_editions": {
+      "year": 2024,
+      "name": "SBRC 2024"
+    }
+  },
+  {
+    "id": 3,
+    "title": "Blockchain e suas Aplicações em IoT",
+    "authors": "Carlos Oliveira",
+    "year": 2023,
+    "url": "https://storage.supabase.co/articles/article3.pdf",
+    "edition_id": 2,
+    "event_editions": {
+      "year": 2023,
+      "name": "SBRC 2023"
+    }
+  }
+]
