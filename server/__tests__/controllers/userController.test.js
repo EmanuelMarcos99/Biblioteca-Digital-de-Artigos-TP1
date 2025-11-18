@@ -90,9 +90,16 @@ describe('UserController - Testes Completos', () => {
         mockSelect.mockReturnThis();
         mockInsert.mockReturnThis();
         mockUpdate.mockReturnThis();
-        mockEq.mockReturnThis();
-        mockSingle.mockReturnThis();
         mockUpsert.mockReturnThis();
+        
+        // eq() retorna um objeto com single() que é o final
+        mockEq.mockReturnValue({
+            single: mockSingle,
+            select: mockSelect, // Para casos de update/delete que usam eq().select()
+        });
+        
+        // single() é sempre o final da chain
+        mockSingle.mockReturnThis();
 
         // Configurar mockFrom para retornar query builder
         mockFrom.mockReturnValue({
@@ -135,9 +142,11 @@ describe('UserController - Testes Completos', () => {
             bcrypt.hash.mockResolvedValue(hashedPassword);
             
             // Primeira chamada: verificar se usuário existe (não existe)
+            // O .single() é o final da chain e retorna a Promise
             mockSingle.mockResolvedValueOnce({ data: null, error: null });
             
             // Segunda chamada: inserir novo usuário
+            // O .select() é o final da chain após .insert()
             mockSelect.mockResolvedValueOnce({ 
                 data: [{ id: 2, name: 'Novo Usuário', email: 'novo@test.com' }], 
                 error: null 
@@ -179,7 +188,7 @@ describe('UserController - Testes Completos', () => {
 
         it('deve retornar 500 se houver erro ao gerar hash da senha', async () => {
             // ARRANGE
-            mockSingle.mockResolvedValue({ data: null, error: null });
+            mockSingle.mockResolvedValueOnce({ data: null, error: null });
             const bcryptError = new Error('Erro no bcrypt');
             bcrypt.hash.mockRejectedValue(bcryptError);
 
@@ -193,11 +202,11 @@ describe('UserController - Testes Completos', () => {
 
         it('deve retornar 500 se houver erro ao inserir no banco de dados', async () => {
             // ARRANGE
-            mockSingle.mockResolvedValue({ data: null, error: null });
+            mockSingle.mockResolvedValueOnce({ data: null, error: null });
             bcrypt.hash.mockResolvedValue('$2b$10$hashed');
             
             const dbError = new Error('Erro de constraint');
-            mockSelect.mockResolvedValue({ data: null, error: dbError });
+            mockSelect.mockResolvedValueOnce({ data: null, error: dbError });
 
             // ACT
             await userController.register(req, res);
