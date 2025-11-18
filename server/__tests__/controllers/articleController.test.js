@@ -33,10 +33,16 @@ jest.mock('@supabase/supabase-js', () => ({
 jest.mock('fs');
 const fs = require('fs');
 
-const mockParseBibtex = jest.fn();
-
+// Mock correto do bibtex-parse-js
+const mockToJSON = jest.fn();
 jest.mock('@orcid/bibtex-parse-js', () => ({
-    parseBibtex: mockParseBibtex,
+    toJSON: mockToJSON,
+}));
+
+// Mock do userController para notificações
+const mockGetSubscribers = jest.fn();
+jest.mock('../../src/controllers/userController', () => ({
+    getSubscribers: mockGetSubscribers,
 }));
 
 jest.mock('bcrypt', () => ({
@@ -52,6 +58,7 @@ jest.mock('nodemailer', () => ({
 }));
 
 global.console.error = jest.fn();
+global.console.log = jest.fn();
 
 // ===========================
 // 2. IMPORTS
@@ -63,7 +70,7 @@ const articleController = require('../../src/controllers/articleController');
 // 3. TESTES
 // ===========================
 
-describe('ArticleController - Testes Completos', () => {
+describe('ArticleController - Testes Completos com 100% Cobertura', () => {
     let req, res;
 
     beforeEach(() => {
@@ -104,14 +111,19 @@ describe('ArticleController - Testes Completos', () => {
             status: jest.fn().mockReturnThis(),
             send: jest.fn().mockReturnThis(),
         };
+
+        fs.existsSync = jest.fn().mockReturnValue(true);
+        fs.unlinkSync = jest.fn();
+        fs.readFileSync = jest.fn();
     });
+
     // ===========================
     // TESTES: getAll()
     // ===========================
     describe('getAll()', () => {
         const mockArticles = [
-            { id: 1, title: 'Artigo 1' },
-            { id: 2, title: 'Artigo 2' },
+            { id: 1, title: 'Artigo 1', authors: 'João Silva' },
+            { id: 2, title: 'Artigo 2', authors: 'Maria Santos' },
         ];
 
         it('deve retornar todos os artigos sem busca', async () => {
@@ -124,32 +136,34 @@ describe('ArticleController - Testes Completos', () => {
             expect(res.json).toHaveBeenCalledWith(mockArticles);
         });
 
-        it('deve filtrar artigos por search query', async () => {
+        it('deve filtrar artigos por search query (título e autores)', async () => {
             req.query.search = 'teste';
             mockOr.mockResolvedValue({ data: mockArticles, error: null });
 
             await articleController.getAll(req, res);
 
-            expect(mockOr).toHaveBeenCalled();
+            expect(mockOr).toHaveBeenCalledWith('title.ilike.%teste%,authors.ilike.%teste%');
             expect(res.json).toHaveBeenCalledWith(mockArticles);
         });
 
-        it('deve retornar erro 500 em caso de falha', async () => {
-            const dbError = new Error('DB Error');
+        it('deve retornar erro 500 em caso de falha no banco', async () => {
+            const dbError = new Error('Database connection failed');
             mockSelect.mockResolvedValue({ data: null, error: dbError });
 
             await articleController.getAll(req, res);
 
             expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Database connection failed' });
         });
     });
+
     // ===========================
     // TESTES: getById()
     // ===========================
     describe('getById()', () => {
         it('deve retornar artigo pelo ID', async () => {
             req.params.id = '1';
-            const mockArticle = { id: 1, title: 'Artigo Teste' };
+            const mockArticle = { id: 1, title: 'Artigo Teste', abstract: 'Resumo teste' };
             mockSingle.mockResolvedValue({ data: mockArticle, error: null });
 
             await articleController.getById(req, res);
@@ -165,33 +179,56 @@ describe('ArticleController - Testes Completos', () => {
             await articleController.getById(req, res);
 
             expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Artigo não encontrado.' });
+        });
+
+        it('deve retornar 500 em caso de erro no banco', async () => {
+            req.params.id = '1';
+            const dbError = new Error('Database error');
+            mockSingle.mockResolvedValue({ data: null, error: dbError });
+
+            await articleController.getById(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Database error' });
         });
     });
 
     // ===========================
-    // TESTES: create()
+    // TESTES: create() - COMPLETO COM ABSTRACT
     // ===========================
-
     describe('create()', () => {
         beforeEach(() => {
-            req.file = { path: '/tmp/test.pdf', originalname: 'test.pdf' };
+            req.file = { 
+                path: '/tmp/test.pdf', 
+                originalname: 'test.pdf',
+                filename: 'test-123.pdf',
+                mimetype: 'application/pdf'
+            };
             req.body = {
                 title: 'Novo Artigo',
                 edition_id: '1',
                 authors: 'João Silva',
+                abstract: 'Este é o resumo do artigo de teste'
             };
-            fs.existsSync = jest.fn().mockReturnValue(true);
-            fs.unlinkSync = jest.fn();
+            fs.readFileSync.mockReturnValue(Buffer.from('PDF content'));
         });
 
-        it('deve criar artigo com PDF com sucesso', async () => {
-            mockUpload.mockResolvedValue({ data: { path: 'test.pdf' }, error: null });
+        it('deve criar artigo com PDF e abstract com sucesso', async () => {
+            mockUpload.mockResolvedValue({ data: { path: 'public/test-123.pdf' }, error: null });
             mockGetPublicUrl.mockReturnValue({
-                data: { publicUrl: 'https://storage/test.pdf' },
+                data: { publicUrl: 'https://storage.supabase.co/test.pdf' },
             });
             const mockInsertChain = {
                 select: jest.fn().mockResolvedValue({
-                    data: [{ id: 1, title: 'Novo Artigo', url: 'https://storage/test.pdf' }],
+                    data: [{ 
+                        id: 1, 
+                        title: 'Novo Artigo', 
+                        authors: 'João Silva',
+                        abstract: 'Este é o resumo do artigo de teste',
+                        pdf_url: 'https://storage.supabase.co/test.pdf',
+                        event_edition_id: '1'
+                    }],
                     error: null,
                 }),
             };
@@ -199,18 +236,63 @@ describe('ArticleController - Testes Completos', () => {
 
             await articleController.create(req, res);
 
-            expect(mockUpload).toHaveBeenCalled();
-            expect(mockInsert).toHaveBeenCalled();
+            expect(fs.readFileSync).toHaveBeenCalledWith('/tmp/test.pdf');
+            expect(mockUpload).toHaveBeenCalledWith(
+                'public/test-123.pdf',
+                Buffer.from('PDF content'),
+                { contentType: 'application/pdf', upsert: false }
+            );
+            expect(mockInsert).toHaveBeenCalledWith([{
+                title: 'Novo Artigo',
+                authors: 'João Silva',
+                abstract: 'Este é o resumo do artigo de teste',
+                event_edition_id: '1',
+                pdf_url: 'https://storage.supabase.co/test.pdf'
+            }]);
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/test.pdf');
             expect(res.status).toHaveBeenCalledWith(201);
         });
 
-        it('deve retornar 400 se campos obrigatórios não forem fornecidos', async () => {
+        it('deve retornar 400 se title não for fornecido', async () => {
             delete req.body.title;
 
             await articleController.create(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(mockInsert).not.toHaveBeenCalled();
+            expect(res.json).toHaveBeenCalledWith({ 
+                error: 'Todos os campos e o ficheiro PDF são obrigatórios.' 
+            });
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/test.pdf');
+        });
+
+        it('deve retornar 400 se authors não for fornecido', async () => {
+            delete req.body.authors;
+
+            await articleController.create(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/test.pdf');
+        });
+
+        it('deve retornar 400 se edition_id não for fornecido', async () => {
+            delete req.body.edition_id;
+
+            await articleController.create(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/test.pdf');
+        });
+
+        it('deve retornar 400 se abstract não for fornecido', async () => {
+            delete req.body.abstract;
+
+            await articleController.create(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ 
+                error: 'Todos os campos e o ficheiro PDF são obrigatórios.' 
+            });
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/test.pdf');
         });
 
         it('deve retornar 400 se PDF não for fornecido', async () => {
@@ -219,26 +301,57 @@ describe('ArticleController - Testes Completos', () => {
             await articleController.create(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
+            expect(mockUpload).not.toHaveBeenCalled();
         });
 
-        it('deve retornar 500 em caso de erro no upload', async () => {
-            const uploadError = new Error('Falha no upload');
+        it('deve retornar 500 em caso de erro no upload do Storage', async () => {
+            const uploadError = new Error('Storage full');
             mockUpload.mockResolvedValue({ data: null, error: uploadError });
 
             await articleController.create(req, res);
 
-            expect(console.error).toHaveBeenCalled();
+            expect(console.error).toHaveBeenCalledWith('ERRO DETALHADO DO SUPABASE AO CRIAR ARTIGO:', uploadError);
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Falha no upload ou inserção: Storage full' });
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/test.pdf');
+        });
+
+        it('deve retornar 500 em caso de erro na inserção do banco', async () => {
+            mockUpload.mockResolvedValue({ data: { path: 'test.pdf' }, error: null });
+            mockGetPublicUrl.mockReturnValue({
+                data: { publicUrl: 'https://storage.supabase.co/test.pdf' },
+            });
+            
+            const insertError = new Error('Duplicate entry');
+            const mockInsertChain = {
+                select: jest.fn().mockResolvedValue({
+                    data: null,
+                    error: insertError,
+                }),
+            };
+            mockInsert.mockReturnValue(mockInsertChain);
+
+            await articleController.create(req, res);
+
             expect(res.status).toHaveBeenCalledWith(500);
             expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/test.pdf');
+        });
+
+        it('deve remover arquivo mesmo quando fs.existsSync retorna false no catch', async () => {
+            fs.existsSync.mockReturnValueOnce(true).mockReturnValueOnce(false);
+            mockUpload.mockResolvedValue({ data: null, error: new Error('Upload failed') });
+
+            await articleController.create(req, res);
+
+            expect(fs.unlinkSync).not.toHaveBeenCalled();
         });
     });
 
     // ===========================
-    // TESTES: update()
+    // TESTES: update() - COMPLETO COM ABSTRACT
     // ===========================
-
     describe('update()', () => {
-        it('deve atualizar artigo com sucesso', async () => {
+        it('deve atualizar title com sucesso', async () => {
             req.params.id = '1';
             req.body = { title: 'Título Atualizado' };
             mockSelect.mockResolvedValue({
@@ -250,7 +363,75 @@ describe('ArticleController - Testes Completos', () => {
 
             expect(mockUpdate).toHaveBeenCalledWith({ title: 'Título Atualizado' });
             expect(mockEq).toHaveBeenCalledWith('id', '1');
-            expect(res.json).toHaveBeenCalled();
+            expect(res.json).toHaveBeenCalledWith({ id: 1, title: 'Título Atualizado' });
+        });
+
+        it('deve atualizar authors com sucesso', async () => {
+            req.params.id = '1';
+            req.body = { authors: 'Maria Santos, João Silva' };
+            mockSelect.mockResolvedValue({
+                data: [{ id: 1, authors: 'Maria Santos, João Silva' }],
+                error: null,
+            });
+
+            await articleController.update(req, res);
+
+            expect(mockUpdate).toHaveBeenCalledWith({ authors: 'Maria Santos, João Silva' });
+        });
+
+        it('deve atualizar edition_id (event_edition_id) com sucesso', async () => {
+            req.params.id = '1';
+            req.body = { edition_id: '5' };
+            mockSelect.mockResolvedValue({
+                data: [{ id: 1, event_edition_id: '5' }],
+                error: null,
+            });
+
+            await articleController.update(req, res);
+
+            expect(mockUpdate).toHaveBeenCalledWith({ event_edition_id: '5' });
+        });
+
+        it('deve atualizar abstract com sucesso', async () => {
+            req.params.id = '1';
+            req.body = { abstract: 'Novo resumo atualizado' };
+            mockSelect.mockResolvedValue({
+                data: [{ id: 1, abstract: 'Novo resumo atualizado' }],
+                error: null,
+            });
+
+            await articleController.update(req, res);
+
+            expect(mockUpdate).toHaveBeenCalledWith({ abstract: 'Novo resumo atualizado' });
+        });
+
+        it('deve atualizar múltiplos campos simultaneamente', async () => {
+            req.params.id = '1';
+            req.body = { 
+                title: 'Novo Título', 
+                authors: 'Autor Novo',
+                abstract: 'Novo abstract',
+                edition_id: '3'
+            };
+            mockSelect.mockResolvedValue({
+                data: [{ 
+                    id: 1, 
+                    title: 'Novo Título',
+                    authors: 'Autor Novo',
+                    abstract: 'Novo abstract',
+                    event_edition_id: '3'
+                }],
+                error: null,
+            });
+
+            await articleController.update(req, res);
+
+            expect(mockUpdate).toHaveBeenCalledWith({ 
+                title: 'Novo Título',
+                authors: 'Autor Novo',
+                abstract: 'Novo abstract',
+                event_edition_id: '3'
+            });
         });
 
         it('deve retornar 400 se nenhum campo for fornecido', async () => {
@@ -260,6 +441,8 @@ describe('ArticleController - Testes Completos', () => {
             await articleController.update(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Nenhum campo fornecido para atualização.' });
+            expect(mockUpdate).not.toHaveBeenCalled();
         });
 
         it('deve retornar 404 se artigo não for encontrado', async () => {
@@ -270,17 +453,28 @@ describe('ArticleController - Testes Completos', () => {
             await articleController.update(req, res);
 
             expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Artigo não encontrado.' });
+        });
+
+        it('deve retornar 500 em caso de erro no banco', async () => {
+            req.params.id = '1';
+            req.body = { title: 'Test' };
+            const dbError = new Error('Update failed');
+            mockSelect.mockResolvedValue({ data: null, error: dbError });
+
+            await articleController.update(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Update failed' });
         });
     });
 
     // ===========================
     // TESTES: delete()
     // ===========================
-
     describe('delete()', () => {
         it('deve deletar artigo com sucesso', async () => {
             req.params.id = '1';
-            // delete().eq() retorna Promise
             mockEq.mockResolvedValue({ error: null });
 
             await articleController.delete(req, res);
@@ -288,50 +482,68 @@ describe('ArticleController - Testes Completos', () => {
             expect(mockDelete).toHaveBeenCalled();
             expect(mockEq).toHaveBeenCalledWith('id', '1');
             expect(res.status).toHaveBeenCalledWith(204);
+            expect(res.send).toHaveBeenCalled();
         });
 
-        it('deve retornar 500 em caso de erro', async () => {
+        it('deve retornar 500 em caso de erro no banco', async () => {
             req.params.id = '1';
-            const dbError = new Error('Erro ao deletar');
-            mockDelete.mockResolvedValue({ error: dbError });
+            const dbError = new Error('Delete constraint violation');
+            mockEq.mockResolvedValue({ error: dbError });
 
             await articleController.delete(req, res);
 
             expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ error: 'Delete constraint violation' });
         });
     });
 
     // ===========================
-    // TESTES: importBibtex()
+    // TESTES: importBibtex() - COMPLETO COM NOTIFICAÇÕES
     // ===========================
-
     describe('importBibtex()', () => {
         beforeEach(() => {
-            req.body = {
-                bibtexContent: '@article{test2024, title={Test Article}}',
-                edition_id: '1',
+            req.file = {
+                path: '/tmp/articles.bib',
+                filename: 'articles.bib'
             };
+            req.body = {
+                edition_id: '1'
+            };
+            fs.readFileSync.mockReturnValue(`
+                @article{silva2024,
+                    title = {Artigo de Teste},
+                    author = {Silva, João and Santos, Maria},
+                    abstract = {Este é um resumo de teste}
+                }
+            `);
         });
 
-        it('deve importar BibTeX com sucesso', async () => {
-            mockParseBibtex.mockReturnValue({
-                entries: {
-                    test2024: {
-                        getFieldAsString: jest.fn((field) => {
-                            const fields = {
-                                title: 'Test Article',
-                                author: 'John Doe',
-                                year: '2024',
-                            };
-                            return fields[field] || '';
-                        }),
-                    },
-                },
-            });
-
+        it('deve importar BibTeX com 1 artigo e enviar notificação', async () => {
+            const parsedEntries = [{
+                citationKey: 'silva2024',
+                entryType: 'ARTICLE',
+                entryTags: {
+                    title: 'Artigo de Teste',
+                    author: 'Silva, João and Santos, Maria',
+                    abstract: 'Este é um resumo de teste'
+                }
+            }];
+            
+            mockToJSON.mockReturnValue(parsedEntries);
+            mockGetSubscribers.mockResolvedValue([
+                { email: 'user1@test.com' },
+                { email: 'user2@test.com' }
+            ]);
+            
             const mockInsertChain = {
                 select: jest.fn().mockResolvedValue({
-                    data: [{ id: 1, title: 'Test Article' }],
+                    data: [{
+                        id: 1,
+                        title: 'Artigo de Teste',
+                        authors: 'Silva, João, Santos, Maria',
+                        abstract: 'Este é um resumo de teste',
+                        event_edition_id: '1'
+                    }],
                     error: null,
                 }),
             };
@@ -339,17 +551,182 @@ describe('ArticleController - Testes Completos', () => {
 
             await articleController.importBibtex(req, res);
 
-            expect(mockParseBibtex).toHaveBeenCalled();
-            expect(mockInsert).toHaveBeenCalled();
-            expect(res.status).toHaveBeenCalledWith(201);
+            expect(fs.readFileSync).toHaveBeenCalledWith('/tmp/articles.bib', 'utf8');
+            expect(mockToJSON).toHaveBeenCalled();
+            expect(mockInsert).toHaveBeenCalledWith([{
+                title: 'Artigo de Teste',
+                authors: 'Silva, João, Santos, Maria',
+                abstract: 'Este é um resumo de teste',
+                event_edition_id: '1'
+            }]);
+            expect(mockGetSubscribers).toHaveBeenCalled();
+            expect(console.log).toHaveBeenCalledWith(
+                'Simulando envio de e-mail sobre o novo artigo: "Artigo de Teste" para 2 destinatários.'
+            );
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/articles.bib');
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Importação de BibTeX concluída. 1 artigos criados.',
+                articles_created: expect.any(Array)
+            });
         });
 
-        it('deve retornar 400 se bibtexContent não for fornecido', async () => {
-            delete req.body.bibtexContent;
+        it('deve importar múltiplos artigos e enviar notificação coletiva', async () => {
+            const parsedEntries = [
+                {
+                    citationKey: 'silva2024',
+                    entryType: 'ARTICLE',
+                    entryTags: {
+                        title: 'Artigo 1',
+                        author: 'Silva, João',
+                        abstract: 'Abstract 1'
+                    }
+                },
+                {
+                    citationKey: 'santos2024',
+                    entryType: 'ARTICLE',
+                    entryTags: {
+                        title: 'Artigo 2',
+                        author: 'Santos, Maria',
+                        abstract: 'Abstract 2'
+                    }
+                }
+            ];
+            
+            mockToJSON.mockReturnValue(parsedEntries);
+            mockGetSubscribers.mockResolvedValue([{ email: 'user@test.com' }]);
+            
+            const mockInsertChain = {
+                select: jest.fn().mockResolvedValue({
+                    data: [
+                        { id: 1, title: 'Artigo 1', authors: 'Silva, João', abstract: 'Abstract 1', event_edition_id: '1' },
+                        { id: 2, title: 'Artigo 2', authors: 'Santos, Maria', abstract: 'Abstract 2', event_edition_id: '1' }
+                    ],
+                    error: null,
+                }),
+            };
+            mockInsert.mockReturnValue(mockInsertChain);
 
             await articleController.importBibtex(req, res);
 
-            expect(res.status).toHaveBeenCalledWith(400);
+            expect(console.log).toHaveBeenCalledWith(
+                'Simulando envio de e-mail sobre o novo artigo: "Importação de 2 novos artigos" para 1 destinatários.'
+            );
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Importação de BibTeX concluída. 2 artigos criados.',
+                articles_created: expect.any(Array)
+            });
+        });
+
+        it('deve processar artigo sem autor (Autor Desconhecido)', async () => {
+            const parsedEntries = [{
+                citationKey: 'test2024',
+                entryType: 'ARTICLE',
+                entryTags: {
+                    title: 'Artigo Sem Autor',
+                    abstract: 'Resumo teste'
+                }
+            }];
+            
+            mockToJSON.mockReturnValue(parsedEntries);
+            mockGetSubscribers.mockResolvedValue([]);
+            
+            const mockInsertChain = {
+                select: jest.fn().mockResolvedValue({
+                    data: [{
+                        id: 1,
+                        title: 'Artigo Sem Autor',
+                        authors: 'Autor Desconhecido',
+                        abstract: 'Resumo teste',
+                        event_edition_id: '1'
+                    }],
+                    error: null,
+                }),
+            };
+            mockInsert.mockReturnValue(mockInsertChain);
+
+            await articleController.importBibtex(req, res);
+
+            expect(mockInsert).toHaveBeenCalledWith([{
+                title: 'Artigo Sem Autor',
+                authors: 'Autor Desconhecido',
+                abstract: 'Resumo teste',
+                event_edition_id: '1'
+            }]);
+        });
+
+        it('deve processar artigo sem título (Título não encontrado)', async () => {
+            const parsedEntries = [{
+                citationKey: 'test2024',
+                entryType: 'ARTICLE',
+                entryTags: {
+                    author: 'Silva, João',
+                    abstract: 'Resumo'
+                }
+            }];
+            
+            mockToJSON.mockReturnValue(parsedEntries);
+            mockGetSubscribers.mockResolvedValue([]);
+            
+            const mockInsertChain = {
+                select: jest.fn().mockResolvedValue({
+                    data: [{
+                        id: 1,
+                        title: 'Título não encontrado',
+                        authors: 'Silva, João',
+                        abstract: 'Resumo',
+                        event_edition_id: '1'
+                    }],
+                    error: null,
+                }),
+            };
+            mockInsert.mockReturnValue(mockInsertChain);
+
+            await articleController.importBibtex(req, res);
+
+            expect(mockInsert).toHaveBeenCalledWith([{
+                title: 'Título não encontrado',
+                authors: 'Silva, João',
+                abstract: 'Resumo',
+                event_edition_id: '1'
+            }]);
+        });
+
+        it('deve processar artigo sem abstract (Resumo não disponível)', async () => {
+            const parsedEntries = [{
+                citationKey: 'test2024',
+                entryType: 'ARTICLE',
+                entryTags: {
+                    title: 'Artigo Teste',
+                    author: 'Silva, João'
+                }
+            }];
+            
+            mockToJSON.mockReturnValue(parsedEntries);
+            mockGetSubscribers.mockResolvedValue([]);
+            
+            const mockInsertChain = {
+                select: jest.fn().mockResolvedValue({
+                    data: [{
+                        id: 1,
+                        title: 'Artigo Teste',
+                        authors: 'Silva, João',
+                        abstract: 'Resumo não disponível.',
+                        event_edition_id: '1'
+                    }],
+                    error: null,
+                }),
+            };
+            mockInsert.mockReturnValue(mockInsertChain);
+
+            await articleController.importBibtex(req, res);
+
+            expect(mockInsert).toHaveBeenCalledWith([{
+                title: 'Artigo Teste',
+                authors: 'Silva, João',
+                abstract: 'Resumo não disponível.',
+                event_edition_id: '1'
+            }]);
         });
 
         it('deve retornar 400 se edition_id não for fornecido', async () => {
@@ -358,17 +735,119 @@ describe('ArticleController - Testes Completos', () => {
             await articleController.importBibtex(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ 
+                error: 'ID da edição e o ficheiro BibTeX são obrigatórios.' 
+            });
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/articles.bib');
         });
 
-        it('deve retornar 500 em caso de erro no parse', async () => {
-            mockParseBibtex.mockImplementation(() => {
+        it('deve retornar 400 se arquivo não for fornecido', async () => {
+            req.file = null;
+
+            await articleController.importBibtex(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(mockToJSON).not.toHaveBeenCalled();
+        });
+
+        it('deve retornar 400 se BibTeX não tiver entradas válidas', async () => {
+            mockToJSON.mockReturnValue([]);
+
+            await articleController.importBibtex(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ 
+                message: 'Nenhuma entrada válida encontrada no ficheiro BibTeX.' 
+            });
+        });
+
+        it('deve retornar 400 se BibTeX retornar null', async () => {
+            mockToJSON.mockReturnValue(null);
+
+            await articleController.importBibtex(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+        });
+
+        it('deve capturar erro do parse do BibTeX', async () => {
+            const parseError = new Error('Invalid BibTeX format');
+            mockToJSON.mockImplementation(() => {
+                throw parseError;
+            });
+
+            await articleController.importBibtex(req, res);
+
+            expect(console.error).toHaveBeenCalledWith('Erro ao fazer o parse do BibTeX:', parseError);
+            expect(res.status).toHaveBeenCalledWith(400);
+        });
+
+        it('deve retornar 500 em caso de erro na inserção do banco', async () => {
+            const parsedEntries = [{
+                citationKey: 'test2024',
+                entryType: 'ARTICLE',
+                entryTags: {
+                    title: 'Test',
+                    author: 'Author',
+                    abstract: 'Abstract'
+                }
+            }];
+            
+            mockToJSON.mockReturnValue(parsedEntries);
+            
+            const insertError = new Error('Database insertion failed');
+            const mockInsertChain = {
+                select: jest.fn().mockResolvedValue({
+                    data: null,
+                    error: insertError,
+                }),
+            };
+            mockInsert.mockReturnValue(mockInsertChain);
+
+            await articleController.importBibtex(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ 
+                error: 'Database insertion failed' 
+            });
+            expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/articles.bib');
+        });
+
+        it('não deve enviar notificação se não houver subscribers', async () => {
+            const parsedEntries = [{
+                citationKey: 'test2024',
+                entryType: 'ARTICLE',
+                entryTags: {
+                    title: 'Test',
+                    author: 'Author',
+                    abstract: 'Abstract'
+                }
+            }];
+            
+            mockToJSON.mockReturnValue(parsedEntries);
+            mockGetSubscribers.mockResolvedValue([]);
+            
+            const mockInsertChain = {
+                select: jest.fn().mockResolvedValue({
+                    data: [{ id: 1, title: 'Test' }],
+                    error: null,
+                }),
+            };
+            mockInsert.mockReturnValue(mockInsertChain);
+
+            await articleController.importBibtex(req, res);
+
+            expect(console.log).toHaveBeenCalledWith('Nenhum assinante para notificar.');
+        });
+
+        it('deve remover arquivo temporário mesmo quando existe erro e arquivo não existe', async () => {
+            fs.existsSync.mockReturnValueOnce(true).mockReturnValueOnce(false);
+            mockToJSON.mockImplementation(() => {
                 throw new Error('Parse error');
             });
 
             await articleController.importBibtex(req, res);
 
-            expect(console.error).toHaveBeenCalled();
-            expect(res.status).toHaveBeenCalledWith(500);
+            expect(fs.unlinkSync).not.toHaveBeenCalled();
         });
     });
 });
