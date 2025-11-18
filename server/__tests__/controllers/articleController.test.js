@@ -1,4 +1,4 @@
-// Mock completo de TODAS as dependências antes de qualquer import
+// Mock completo de TODAS as dependências antes de qualquer imports
 jest.mock('@supabase/supabase-js', () => {
     // 1. O Objeto central que todos os métodos de cadeia devem retornar
     const QueryBuilderMock = {}; 
