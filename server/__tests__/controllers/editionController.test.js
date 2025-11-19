@@ -1,8 +1,3 @@
-// ============================================================================
-// ARQUIVO DE TESTE COMPLETO - editionController.test.js
-// Engenheiro de QA Sênior - Padrão AAA (Arrange, Act, Assert)
-// Objetivo: Atingir 70%+ de cobertura sem modificar o código-fonte
-// ============================================================================
 
 // ===========================
 // 1. MOCKS DE DEPENDÊNCIAS (ANTES de qualquer import)

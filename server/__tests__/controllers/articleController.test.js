@@ -1,8 +1,4 @@
 // ============================================================================
-// ARQUIVO DE TESTE COMPLETO - articleController.test.js (VERSÃO CORRIGIDA)
-// Engenheiro de QA Sênior - Padrão AAA (Arrange, Act, Assert)
-// ============================================================================
-
 // ===========================
 // 1. MOCKS (ANTES DOS IMPORTS)
 // ===========================

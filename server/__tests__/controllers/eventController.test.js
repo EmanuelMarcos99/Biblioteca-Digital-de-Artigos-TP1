@@ -1,9 +1,4 @@
-// ============================================================================
-// ARQUIVO DE TESTE COMPLETO - eventController.test.js
-// Engenheiro de QA Sênior - Padrão AAA (Arrange, Act, Assert)
-// Objetivo: Atingir 70%+ de cobertura sem modificar o código-fonte
-// ATENÇÃO: Função create() está DUPLICADA (linhas 34 e 172)
-// ============================================================================
+// ============================================================================// ============================================================================
 
 // ===========================
 // 1. MOCKS DE DEPENDÊNCIAS (ANTES de qualquer import)

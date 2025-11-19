@@ -1,9 +1,4 @@
-// ============================================================================
-// ARQUIVO DE TESTE COMPLETO - userController.test.js
-// Engenheiro de QA Sênior - Padrão AAA (Arrange, Act, Assert)
-// Objetivo: Atingir 70%+ de cobertura sem modificar o código-fonte
-// PRIORIDADE: ALTA - Segurança Crítica (JWT, bcrypt, autenticação)
-// ============================================================================
+// ============================================================================// ============================================================================
 
 // ===========================
 // 1. MOCKS DE DEPENDÊNCIAS (ANTES de qualquer import)
