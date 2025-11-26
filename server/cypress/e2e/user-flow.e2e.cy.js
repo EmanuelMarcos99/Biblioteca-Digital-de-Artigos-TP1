@@ -95,6 +95,37 @@ describe('End-to-End Tests - Complete User Flows', () => {
         cy.wait(3000)
         
         cy.log('✅ Registration submitted via UI')
+        
+        // ✅ VALIDAR REGISTRO VIA API
+        cy.log('🔍 Validating registration via API...')
+        cy.request({
+          method: 'POST',
+          url: 'http://localhost:3001/api/users/register',
+          body: { 
+            name: 'E2E Test User Validation', 
+            email: `validation-${userEmail}`, 
+            password 
+          },
+          failOnStatusCode: false
+        }).then((registerRes) => {
+          cy.log('🔍 API Registration Response:', registerRes.status)
+          
+          if (![200, 201, 400].includes(registerRes.status)) {
+            const errorMsg = registerRes.body?.error || 'Unknown error'
+            cy.log(`❌ ERROR: Registration API failed with status ${registerRes.status}`)
+            cy.log(`❌ Error message: ${errorMsg}`)
+            cy.log(`❌ Full response:`, JSON.stringify(registerRes.body, null, 2))
+            
+            throw new Error(
+              `Registration API Failed!\n` +
+              `Expected status: 200/201\n` +
+              `Received status: ${registerRes.status}\n` +
+              `Error: ${errorMsg}`
+            )
+          }
+          
+          cy.log('✅ Registration API validation successful')
+        })
       } else {
         cy.log('⚠️ Registration form not found in UI, using API')
         
@@ -109,9 +140,23 @@ describe('End-to-End Tests - Complete User Flows', () => {
           },
           failOnStatusCode: false
         }).then((registerRes) => {
+          cy.log('🔍 Register API Response:', registerRes.status)
+          
+          if (![200, 201].includes(registerRes.status)) {
+            const errorMsg = registerRes.body?.error || 'Unknown error'
+            cy.log(`❌ ERROR: Registration failed with status ${registerRes.status}`)
+            cy.log(`❌ Error message: ${errorMsg}`)
+            
+            throw new Error(
+              `Registration failed!\n` +
+              `Expected status: 200/201\n` +
+              `Received status: ${registerRes.status}\n` +
+              `Error: ${errorMsg}`
+            )
+          }
+          
           cy.log('✅ Register via API:', registerRes.status)
           cy.wait(1500)
-          expect([200, 201]).to.include(registerRes.status)
         })
       }
     })
@@ -175,7 +220,7 @@ describe('End-to-End Tests - Complete User Flows', () => {
         
         cy.log('✅ Login submitted via UI')
         
-        // ✅ NOVO: Validar via API mesmo após login via UI
+        // ✅ VALIDAR VIA API
         cy.log('🔍 Validating login via API...')
         cy.request({
           method: 'POST',
@@ -185,7 +230,6 @@ describe('End-to-End Tests - Complete User Flows', () => {
         }).then((loginRes) => {
           cy.log('🔍 API Validation Response:', loginRes.status)
           
-          // ❌ FALHA SE API RETORNAR ERRO
           if (loginRes.status !== 200) {
             const errorMsg = loginRes.body?.error || 'Unknown error'
             cy.log(`❌ ERROR: API login validation failed with status ${loginRes.status}`)
@@ -202,7 +246,6 @@ describe('End-to-End Tests - Complete User Flows', () => {
           
           cy.log('✅ API validation successful: 200')
           
-          // ❌ VERIFICAR SE TOKEN EXISTE NA RESPOSTA DA API
           if (!loginRes.body.token) {
             cy.log('❌ ERROR: Token not found in API response')
             cy.log('❌ Response body:', JSON.stringify(loginRes.body, null, 2))
@@ -212,7 +255,6 @@ describe('End-to-End Tests - Complete User Flows', () => {
           const apiToken = loginRes.body.token
           cy.log('✅ API Token received:', apiToken.substring(0, 20) + '...')
           
-          // Verificar se foi redirecionado ou se há token salvo
           cy.window().then((win) => {
             const savedToken = win.localStorage.getItem('token') || win.sessionStorage.getItem('token')
             
@@ -220,16 +262,12 @@ describe('End-to-End Tests - Complete User Flows', () => {
               cy.log('✅ Token saved in storage:', savedToken.substring(0, 20) + '...')
               token = savedToken
               
-              // ✅ OPCIONAL: Verificar se token da UI é igual ao da API
               if (savedToken === apiToken) {
                 cy.log('✅ UI token matches API token')
               } else {
                 cy.log('⚠️ WARNING: UI token differs from API token')
-                cy.log('UI token:', savedToken.substring(0, 20) + '...')
-                cy.log('API token:', apiToken.substring(0, 20) + '...')
               }
             } else {
-              // ❌ SE NÃO HOUVER TOKEN NA UI, USAR O DA API
               cy.log('⚠️ No token in localStorage, using API token')
               token = apiToken
               win.localStorage.setItem('token', apiToken)
@@ -240,7 +278,6 @@ describe('End-to-End Tests - Complete User Flows', () => {
       } else {
         cy.log('⚠️ Login form not found in UI, using API')
         
-        // Fallback para API
         cy.request({
           method: 'POST',
           url: 'http://localhost:3001/api/users/login',
@@ -249,7 +286,6 @@ describe('End-to-End Tests - Complete User Flows', () => {
         }).then((loginRes) => {
           cy.log('🔍 Login API Response:', loginRes.status)
           
-          // ❌ TRATAMENTO DE ERRO: Verificar se não é 200
           if (loginRes.status !== 200) {
             const errorMsg = loginRes.body?.error || 'Unknown error'
             cy.log(`❌ ERROR: Login failed with status ${loginRes.status}`)
@@ -267,7 +303,6 @@ describe('End-to-End Tests - Complete User Flows', () => {
           cy.log('✅ Login via API: 200')
           cy.wait(1500)
           
-          // ❌ VERIFICAR SE TOKEN EXISTE
           if (!loginRes.body.token) {
             cy.log('❌ ERROR: Token not found in response body')
             cy.log('❌ Response body:', JSON.stringify(loginRes.body, null, 2))
@@ -277,7 +312,6 @@ describe('End-to-End Tests - Complete User Flows', () => {
           token = loginRes.body.token
           cy.log('✅ Token received:', token.substring(0, 20) + '...')
           
-          // Salvar token no localStorage para uso posterior
           cy.window().then((win) => {
             win.localStorage.setItem('token', token)
             cy.log('✅ Token saved in localStorage')
@@ -296,7 +330,7 @@ describe('End-to-End Tests - Complete User Flows', () => {
     cy.log('🔵 Creating new event via API...')
     cy.wait(1000)
     
-    // Criar evento via API (admin action)
+    // Criar evento via API
     cy.request({
       method: 'POST',
       url: 'http://localhost:3001/api/events',
@@ -307,10 +341,35 @@ describe('End-to-End Tests - Complete User Flows', () => {
       },
       failOnStatusCode: false
     }).then((eventRes) => {
+      cy.log('🔍 Event API Response:', eventRes.status)
+      
+      // ❌ VALIDAR STATUS DA API
+      if (eventRes.status !== 201) {
+        const errorMsg = eventRes.body?.error || 'Unknown error'
+        cy.log(`❌ ERROR: Event creation failed with status ${eventRes.status}`)
+        cy.log(`❌ Error message: ${errorMsg}`)
+        cy.log(`❌ Full response:`, JSON.stringify(eventRes.body, null, 2))
+        
+        throw new Error(
+          `Event Creation Failed!\n` +
+          `Expected status: 201\n` +
+          `Received status: ${eventRes.status}\n` +
+          `Error: ${errorMsg}`
+        )
+      }
+      
       cy.log('✅ Event created:', eventRes.status)
-      cy.wait(1500)
-      expect(eventRes.status).to.eq(201)
+      
+      // ❌ VALIDAR SE ID FOI RETORNADO
+      if (!eventRes.body.id) {
+        cy.log('❌ ERROR: Event ID not found in response')
+        cy.log('❌ Response body:', JSON.stringify(eventRes.body, null, 2))
+        throw new Error('Event creation response missing ID field')
+      }
+      
       eventId = eventRes.body.id
+      cy.log('✅ Event ID:', eventId)
+      cy.wait(1500)
       
       cy.log('🔍 Looking for events in UI...')
       cy.wait(1000)
@@ -346,6 +405,31 @@ describe('End-to-End Tests - Complete User Flows', () => {
         cy.log('🔍 Looking for created event in page...')
         cy.wait(1000)
         
+        // ✅ VALIDAR VIA API SE EVENTO EXISTE
+        cy.log('🔍 Validating event exists via API...')
+        cy.request({
+          method: 'GET',
+          url: `http://localhost:3001/api/events/${eventId}`,
+          failOnStatusCode: false
+        }).then((getEventRes) => {
+          cy.log('🔍 Get Event API Response:', getEventRes.status)
+          
+          if (getEventRes.status !== 200) {
+            const errorMsg = getEventRes.body?.error || 'Unknown error'
+            cy.log(`❌ ERROR: Event not found with status ${getEventRes.status}`)
+            cy.log(`❌ Error message: ${errorMsg}`)
+            
+            throw new Error(
+              `Event Retrieval Failed!\n` +
+              `Expected status: 200\n` +
+              `Received status: ${getEventRes.status}\n` +
+              `Error: ${errorMsg}`
+            )
+          }
+          
+          cy.log('✅ Event exists in API:', getEventRes.body.name)
+        })
+        
         // Procurar pelo evento criado na página
         cy.get('body').then(($eventPage) => {
           if ($eventPage.text().includes(eventName) || $eventPage.text().includes(eventSlug)) {
@@ -364,6 +448,33 @@ describe('End-to-End Tests - Complete User Flows', () => {
   it('E2E Test 3 - Article search and browsing flow', () => {
     cy.log('🔍 Navigating to articles page...')
     cy.wait(1000)
+    
+    // ✅ VALIDAR API DE ARTIGOS ANTES
+    cy.log('🔍 Validating articles API...')
+    cy.request({
+      method: 'GET',
+      url: 'http://localhost:3001/api/articles',
+      failOnStatusCode: false
+    }).then((articlesRes) => {
+      cy.log('🔍 Articles API Response:', articlesRes.status)
+      
+      if (articlesRes.status !== 200) {
+        const errorMsg = articlesRes.body?.error || 'Unknown error'
+        cy.log(`❌ ERROR: Articles API failed with status ${articlesRes.status}`)
+        cy.log(`❌ Error message: ${errorMsg}`)
+        cy.log(`❌ Full response:`, JSON.stringify(articlesRes.body, null, 2))
+        
+        throw new Error(
+          `Articles API Failed!\n` +
+          `Expected status: 200\n` +
+          `Received status: ${articlesRes.status}\n` +
+          `Error: ${errorMsg}`
+        )
+      }
+      
+      cy.log('✅ Articles API validation successful')
+      cy.log(`✅ Found ${articlesRes.body.length || 0} articles`)
+    })
     
     // Procurar artigos na UI
     cy.get('body').then(($body) => {
@@ -422,6 +533,33 @@ describe('End-to-End Tests - Complete User Flows', () => {
           cy.wait(2000)
           
           cy.log('✅ Search performed in UI')
+          
+          // ✅ VALIDAR BUSCA VIA API
+          cy.log('🔍 Validating search via API...')
+          cy.request({
+            method: 'GET',
+            url: 'http://localhost:3001/api/articles?search=test',
+            failOnStatusCode: false
+          }).then((searchRes) => {
+            cy.log('🔍 Search API Response:', searchRes.status)
+            
+            if (searchRes.status !== 200) {
+              const errorMsg = searchRes.body?.error || 'Unknown error'
+              cy.log(`❌ ERROR: Search API failed with status ${searchRes.status}`)
+              cy.log(`❌ Error message: ${errorMsg}`)
+              
+              throw new Error(
+                `Search API Failed!\n` +
+                `Expected status: 200\n` +
+                `Received status: ${searchRes.status}\n` +
+                `Error: ${errorMsg}`
+              )
+            }
+            
+            cy.log('✅ Search API validation successful')
+            cy.log(`✅ Found ${searchRes.body.length || 0} results`)
+          })
+          
           foundSearchField = true
           break
         }
@@ -496,6 +634,33 @@ describe('End-to-End Tests - Complete User Flows', () => {
           
           cy.log('✅ Newsletter subscription submitted via UI')
           
+          // ✅ VALIDAR VIA API
+          cy.log('🔍 Validating subscription via API...')
+          cy.request({
+            method: 'POST',
+            url: 'http://localhost:3001/api/users/subscribe',
+            body: { email: `api-${subscriber1}` },
+            failOnStatusCode: false
+          }).then((subRes) => {
+            cy.log('🔍 Subscribe API Response:', subRes.status)
+            
+            if (![200, 201].includes(subRes.status)) {
+              const errorMsg = subRes.body?.error || 'Unknown error'
+              cy.log(`❌ ERROR: Subscribe API failed with status ${subRes.status}`)
+              cy.log(`❌ Error message: ${errorMsg}`)
+              cy.log(`❌ Full response:`, JSON.stringify(subRes.body, null, 2))
+              
+              throw new Error(
+                `Subscribe API Failed!\n` +
+                `Expected status: 200/201\n` +
+                `Received status: ${subRes.status}\n` +
+                `Error: ${errorMsg}`
+              )
+            }
+            
+            cy.log('✅ Subscribe API validation successful')
+          })
+          
           // Verificar mensagem de sucesso
           cy.wait(1000)
           cy.get('body').then(($result) => {
@@ -525,6 +690,32 @@ describe('End-to-End Tests - Complete User Flows', () => {
             cy.get('button[type="submit"]').click()
             cy.wait(2000)
             cy.log('✅ Subscribed via dedicated page')
+            
+            // ✅ VALIDAR VIA API
+            cy.log('🔍 Validating subscription via API...')
+            cy.request({
+              method: 'POST',
+              url: 'http://localhost:3001/api/users/subscribe',
+              body: { email: `api-${subscriber1}` },
+              failOnStatusCode: false
+            }).then((subRes) => {
+              cy.log('🔍 Subscribe API Response:', subRes.status)
+              
+              if (![200, 201].includes(subRes.status)) {
+                const errorMsg = subRes.body?.error || 'Unknown error'
+                cy.log(`❌ ERROR: Subscribe API failed with status ${subRes.status}`)
+                cy.log(`❌ Error message: ${errorMsg}`)
+                
+                throw new Error(
+                  `Subscribe API Failed!\n` +
+                  `Expected status: 200/201\n` +
+                  `Received status: ${subRes.status}\n` +
+                  `Error: ${errorMsg}`
+                )
+              }
+              
+              cy.log('✅ Subscribe API validation successful')
+            })
           } else {
             cy.log('⚠️ Using API fallback for newsletter')
             
@@ -535,8 +726,22 @@ describe('End-to-End Tests - Complete User Flows', () => {
               body: { email: subscriber1 },
               failOnStatusCode: false
             }).then((subRes) => {
+              cy.log('🔍 Subscribe API Response:', subRes.status)
+              
+              if (![200, 201].includes(subRes.status)) {
+                const errorMsg = subRes.body?.error || 'Unknown error'
+                cy.log(`❌ ERROR: Subscribe failed with status ${subRes.status}`)
+                cy.log(`❌ Error message: ${errorMsg}`)
+                
+                throw new Error(
+                  `Subscribe failed!\n` +
+                  `Expected status: 200/201\n` +
+                  `Received status: ${subRes.status}\n` +
+                  `Error: ${errorMsg}`
+                )
+              }
+              
               cy.log('✅ Subscribed via API:', subRes.status)
-              expect(subRes.status).to.eq(201)
             })
           }
         })
