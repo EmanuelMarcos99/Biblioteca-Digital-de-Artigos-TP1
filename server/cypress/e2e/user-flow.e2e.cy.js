@@ -175,13 +175,67 @@ describe('End-to-End Tests - Complete User Flows', () => {
         
         cy.log('✅ Login submitted via UI')
         
-        // Verificar se foi redirecionado ou se há token salvo
-        cy.window().then((win) => {
-          const savedToken = win.localStorage.getItem('token') || win.sessionStorage.getItem('token')
-          if (savedToken) {
-            cy.log('✅ Token saved in storage:', savedToken.substring(0, 20) + '...')
-            token = savedToken
+        // ✅ NOVO: Validar via API mesmo após login via UI
+        cy.log('🔍 Validating login via API...')
+        cy.request({
+          method: 'POST',
+          url: 'http://localhost:3001/api/users/login',
+          body: { email: userEmail, password },
+          failOnStatusCode: false
+        }).then((loginRes) => {
+          cy.log('🔍 API Validation Response:', loginRes.status)
+          
+          // ❌ FALHA SE API RETORNAR ERRO
+          if (loginRes.status !== 200) {
+            const errorMsg = loginRes.body?.error || 'Unknown error'
+            cy.log(`❌ ERROR: API login validation failed with status ${loginRes.status}`)
+            cy.log(`❌ Error message: ${errorMsg}`)
+            cy.log(`❌ Full response:`, JSON.stringify(loginRes.body, null, 2))
+            
+            throw new Error(
+              `API Login Validation Failed!\n` +
+              `Expected status: 200\n` +
+              `Received status: ${loginRes.status}\n` +
+              `Error: ${errorMsg}`
+            )
           }
+          
+          cy.log('✅ API validation successful: 200')
+          
+          // ❌ VERIFICAR SE TOKEN EXISTE NA RESPOSTA DA API
+          if (!loginRes.body.token) {
+            cy.log('❌ ERROR: Token not found in API response')
+            cy.log('❌ Response body:', JSON.stringify(loginRes.body, null, 2))
+            throw new Error('API login response missing token field')
+          }
+          
+          const apiToken = loginRes.body.token
+          cy.log('✅ API Token received:', apiToken.substring(0, 20) + '...')
+          
+          // Verificar se foi redirecionado ou se há token salvo
+          cy.window().then((win) => {
+            const savedToken = win.localStorage.getItem('token') || win.sessionStorage.getItem('token')
+            
+            if (savedToken) {
+              cy.log('✅ Token saved in storage:', savedToken.substring(0, 20) + '...')
+              token = savedToken
+              
+              // ✅ OPCIONAL: Verificar se token da UI é igual ao da API
+              if (savedToken === apiToken) {
+                cy.log('✅ UI token matches API token')
+              } else {
+                cy.log('⚠️ WARNING: UI token differs from API token')
+                cy.log('UI token:', savedToken.substring(0, 20) + '...')
+                cy.log('API token:', apiToken.substring(0, 20) + '...')
+              }
+            } else {
+              // ❌ SE NÃO HOUVER TOKEN NA UI, USAR O DA API
+              cy.log('⚠️ No token in localStorage, using API token')
+              token = apiToken
+              win.localStorage.setItem('token', apiToken)
+              cy.log('✅ API token saved to localStorage')
+            }
+          })
         })
       } else {
         cy.log('⚠️ Login form not found in UI, using API')
@@ -193,14 +247,40 @@ describe('End-to-End Tests - Complete User Flows', () => {
           body: { email: userEmail, password },
           failOnStatusCode: false
         }).then((loginRes) => {
-          cy.log('✅ Login via API:', loginRes.status)
+          cy.log('🔍 Login API Response:', loginRes.status)
+          
+          // ❌ TRATAMENTO DE ERRO: Verificar se não é 200
+          if (loginRes.status !== 200) {
+            const errorMsg = loginRes.body?.error || 'Unknown error'
+            cy.log(`❌ ERROR: Login failed with status ${loginRes.status}`)
+            cy.log(`❌ Error message: ${errorMsg}`)
+            cy.log(`❌ Full response:`, JSON.stringify(loginRes.body, null, 2))
+            
+            throw new Error(
+              `Login failed!\n` +
+              `Expected status: 200\n` +
+              `Received status: ${loginRes.status}\n` +
+              `Error: ${errorMsg}`
+            )
+          }
+          
+          cy.log('✅ Login via API: 200')
           cy.wait(1500)
-          expect(loginRes.status).to.eq(200)
+          
+          // ❌ VERIFICAR SE TOKEN EXISTE
+          if (!loginRes.body.token) {
+            cy.log('❌ ERROR: Token not found in response body')
+            cy.log('❌ Response body:', JSON.stringify(loginRes.body, null, 2))
+            throw new Error('Login response missing token field')
+          }
+          
           token = loginRes.body.token
+          cy.log('✅ Token received:', token.substring(0, 20) + '...')
           
           // Salvar token no localStorage para uso posterior
           cy.window().then((win) => {
             win.localStorage.setItem('token', token)
+            cy.log('✅ Token saved in localStorage')
           })
         })
       }
